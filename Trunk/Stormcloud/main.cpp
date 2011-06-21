@@ -1,6 +1,6 @@
-#pragma comment(lib,"DevIL.lib")
-#pragma comment(lib,"ILUT.lib")
-#pragma comment(lib,"fmodex_vc.lib")
+#pragma comment(lib,"inc/DevIL.lib")
+#pragma comment(lib,"inc/ILUT.lib")
+#pragma comment(lib,"inc/fmodex_vc.lib")
 
 #include <iostream>
 #include <windows.h>
@@ -79,9 +79,8 @@ void redraw(){
 	
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
-	Quaternion q;
 
-	q = rotationQuat(yRotation,Vector3f(0,1,0)) * rotationQuat(xRotation,Vector3f(1,0,0));
+	Quaternion q = rotationQuat(yRotation,Vector3f(0,1,0)) * rotationQuat(xRotation,Vector3f(1,0,0));
 	glTranslatef(0,0,-20);
 	q.applyRotation();
 

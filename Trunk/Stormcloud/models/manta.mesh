@@ -1513,5 +1513,5 @@ f 3 431 429 428 428 428
 f 3 281 2 81 82 82 
 f 3 444 454 435 435 435 
 f 3 454 470 438 438 438 
-texpath models/textures/MantaTex001.png
+texpath textures/MantaTex001.png
 end manta3
