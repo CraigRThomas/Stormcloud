@@ -38,6 +38,12 @@ bool Object::loadFromFile(char *path){
 			count = 0;
 		} else if (strstr(line.c_str(),"end ")){
 			temp->allocateBuffers();
+			if (!temp->vertShader){
+				temp->vertShader = ShaderMgr.createShader(ShaderType::VERTEX, "shaders/phongVS.glsl");
+			}
+			if (!temp->fragShader){
+				temp->fragShader = ShaderMgr.createShader(ShaderType::FRAGMENT, "shaders/phongPS.glsl");
+			}
 			meshes.push_back(temp);
 		} else if (strstr(line.c_str(),"texpath ")){
 			char buf[256];
@@ -108,6 +114,14 @@ bool Object::loadFromFile(char *path){
 			}
 			count++;
 			free(lineCopy);
+		} else if (strstr(line.c_str(),"mat kd")){
+			sscanf(line.c_str(),"%*s %*s %f %f %f",&temp->mat.diffuse[0],&temp->mat.diffuse[1],&temp->mat.diffuse[2]);
+		} else if (strstr(line.c_str(),"mat ka")){
+			sscanf(line.c_str(),"%*s %*s %f %f %f",&temp->mat.ambient[0],&temp->mat.ambient[1],&temp->mat.ambient[2]);
+		} else if (strstr(line.c_str(),"mat ks")){
+			sscanf(line.c_str(),"%*s %*s %f %f %f",&temp->mat.specular[0],&temp->mat.specular[1],&temp->mat.specular[2]);
+		} else if (strstr(line.c_str(),"mat ns")){
+			sscanf(line.c_str(),"%*s %*s %i",&temp->mat.shininess);
 		}
 	}
 	

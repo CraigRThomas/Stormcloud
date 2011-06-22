@@ -21,7 +21,6 @@ const float deltaTime = 10.0f, timeScale = 1.0;
 bool isPaused = false;
 float yRotation = 0;
 float xRotation = 0;
-Shader* vertexShdr, *pixelShdr;
 Object obj;
 
 void mouseWrap(int b, int s, int x, int y);
@@ -67,7 +66,6 @@ void glutStep(){
 		accumulator -= dt;
 		obj.update(dt);
 	}
-	pixelShdr->send("shininess",1500.f); //1500 seems to be high enough to prevent any shininess
 	ShaderMgr.update();
 	InputMgr.update();
 
@@ -118,11 +116,17 @@ int main(int argc, char **argv){
 	glEnable(GL_LIGHTING);
 	glEnable(GL_LIGHT0);
 
-	float amb[] = {0.3,0.3,0.3};
-	float dif[] = {1.0,1.0,1.0};
-	glLightfv(GL_LIGHT0,GL_AMBIENT,dif);
+	float amb[] = {0.f,0.f,0.f,1.f};
+	float dif[] = {1.0,1.0,1.0,1.f};
+	float spc[] = {1.f,1.f,1.f,1.f};
+	float pos[] = {0.f,0.f,1.f,1.f};
+	glLightfv(GL_LIGHT0,GL_AMBIENT,amb);
 	glLightfv(GL_LIGHT0,GL_DIFFUSE,dif);
-	glLightfv(GL_LIGHT0,GL_SPECULAR,dif);
+	glLightfv(GL_LIGHT0,GL_SPECULAR,spc);
+	glLightfv(GL_LIGHT0,GL_POSITION,pos);
+
+	float As[4] = {0.1,0.1,0.1, 1.0f };
+	glLightModelfv( GL_LIGHT_MODEL_AMBIENT, As );
 
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	
@@ -132,12 +136,6 @@ int main(int argc, char **argv){
 	InputMgr;
 	ShaderMgr;
 	obj.loadFromFile("models/manta.mesh");
-
-	vertexShdr = ShaderMgr.createShader(ShaderType::VERTEX,"shaders/normalVS.glsl");
-	pixelShdr = ShaderMgr.createShader(ShaderType::FRAGMENT,"shaders/normalPS.glsl");
-	ShaderMgr.push(vertexShdr);
-	ShaderMgr.push(pixelShdr);
-	ShaderMgr.checkInvalid();
 
 	QueryPerformanceCounter(&tick1); //record the first tick just before we start
 	

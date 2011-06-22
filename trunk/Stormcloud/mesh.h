@@ -6,10 +6,19 @@
 #include <gl/glut.h>
 #include <gl/glext.h>
 #include <vector>
+#include "shader.h"
+#include "shaderMgr.h"
 
 enum {
 	DATA_BUFFER = 0,
 	INDICES_BUFFER = 1
+};
+
+struct Material {
+	GLfloat diffuse[4];
+	GLfloat ambient[4];
+	GLfloat specular[4];
+	GLint shininess;
 };
 
 class Mesh {
@@ -23,6 +32,9 @@ public:
 	GLuint num_faces;		/**< Number of triangle faces composing this mesh. */
 	GLuint* faces;			/**< List of vertex/normal/tex coord indices for each face. */
 	GLuint texId;			/**< Registed texture id. */
+	Shader* vertShader;		/**< Vertex shader. */
+	Shader* fragShader;		/**< Fragment shader. */
+	Material mat;
 
 	/** Default constructor. */
 	Mesh();

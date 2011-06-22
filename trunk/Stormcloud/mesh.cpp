@@ -10,7 +10,17 @@ PFNGLDELETEBUFFERSARBPROC	Mesh::glDeleteBuffers	= NULL;
 Mesh::Mesh(){
 	vertices = normals = texCoords = 0;
 	texId = 0;
+	vertShader = fragShader = 0;
 	buffers = new GLuint[NUM_BUFFERS];
+	for (int i=0;i<3;i++){
+		mat.diffuse[i] = 0.f;
+		mat.ambient[i] = 1.f;
+		mat.specular[i] = 0.f;
+	}
+	mat.diffuse[3] = 1.f;
+	mat.ambient[3] = 1.f;
+	mat.specular[3] = 1.f;
+	mat.shininess = 20; //must be 0-128; both 0 and 128 result in no shine; 1 is shiniest
 	
 	if (!init) { initBufferProcs(); }
 
@@ -20,11 +30,14 @@ Mesh::Mesh(){
 Mesh::~Mesh(){
 	glDeleteBuffers(NUM_BUFFERS,buffers);
 	vertices = normals = texCoords = 0;
+	vertShader = fragShader = 0;
 	buffers = 0;
 	free(vertices);
 	free(normals);
 	free(texCoords);
 	free(buffers);
+	free(vertShader);
+	free(fragShader);
 }
 
 void Mesh::allocateBuffers(){
@@ -45,8 +58,21 @@ void Mesh::update(const GLfloat &dt){
 }
 
 void Mesh::draw(){
+	if (vertShader){
+		ShaderMgr.push(vertShader);
+	}
+	if (fragShader){
+		ShaderMgr.push(fragShader);
+	}
+	ShaderMgr.checkInvalid();
+
 	glEnable(GL_TEXTURE_2D);
 	glBindTexture(GL_TEXTURE_2D, texId);
+
+	glMaterialfv(GL_FRONT,GL_AMBIENT,mat.ambient);
+	glMaterialfv(GL_FRONT,GL_DIFFUSE,mat.diffuse);
+	glMaterialfv(GL_FRONT,GL_SPECULAR, mat.specular);
+	glMateriali (GL_FRONT,GL_SHININESS,mat.shininess);
 
 	glBindBuffer(GL_ARRAY_BUFFER, buffers[DATA_BUFFER]);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffers[INDICES_BUFFER]);

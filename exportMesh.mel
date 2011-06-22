@@ -238,7 +238,7 @@ global proc writeMesh(){
 		}
 		
 		
-		/** WRITE TEXPATH **/
+		/** WRITE TEXPATH & MATERIAL PROPERTIES **/
 		string $shapes[];
 		if ($saveTextures){
 			$shapes = `listRelatives -s $eachMesh`;
@@ -251,6 +251,29 @@ global proc writeMesh(){
 			
 			string $material = rootNode(`connectionInfo -sfd ($dest[0] + ".surfaceShader")`);
 			string $tex = rootNode(`connectionInfo -sfd ($material + ".color")`);
+			vector $props = `getAttr($material + ".ambientColor")`;
+			print $props;
+			fprint $fileId ("mat ka " + $props + "\n");
+			vector $color = `getAttr($material + ".color")`;
+			
+			if (size($tex)){
+				$props = $color * `getAttr($material + ".diffuse")`;
+			} else {
+				float $f = `getAttr($material + ".diffuse")`;
+				$props = {$f,$f,$f};
+			}
+			fprint $fileId ("mat kd " + $props + "\n");
+			
+			if (`objExists($material + ".specularColor")`){
+				$props = `getAttr($material + ".specularColor")`;
+				fprint $fileId ("mat ks " + $props + "\n");
+			}
+			
+			if (`objExists($material + ".cosinePower")`){
+				float $power = `getAttr($material + ".cosinePower")`;
+				fprint $fileId ("mat ns " + $power + "\n");
+			}
+			
 			if ($tex != ""){
 				string $filename = getAttr($tex + ".fileTextureName");
 				$filename = `basename $filename ""`;

@@ -127,7 +127,7 @@ void Shader::load(char* filepath){
 				strcpy(a.name,name);
 				a.values = new float[a.size*a.arraySize];
 				for (unsigned int i=0;i<a.size*a.arraySize;i++){
-					a.values[i] = 0;
+					a.values[i] = -1;
 				}
 				a.loc = -1;
 				a.mat = mat;
@@ -148,7 +148,7 @@ void Shader::load(char* filepath){
 				strcpy(c.name,name);
 				c.values = new int[c.size*c.arraySize];
 				for (unsigned int i=0;i<c.size*c.arraySize;i++){
-					c.values[i] = 0;
+					c.values[i] = -1;
 				}
 				c.loc = -1;
 				ints.push_back(c);
@@ -276,70 +276,74 @@ void Shader::send(char *name, int value[]){
 
 void Shader::updateUniforms(void){
 	for (unsigned int i=0;i<floats.size();i++){
-		if (!floats[i].mat){
-			switch(floats[i].size){
-				case 1:
-					if (floats[i].arraySize == 1){
-						glUniform1fARB(floats[i].loc, floats[i].values[0]); break;
-					} else {
-						glUniform1fvARB(floats[i].loc, floats[i].size*floats[i].arraySize, floats[i].values); break;
-					}
-				case 2:
-					if (floats[i].arraySize == 1){
-						glUniform2fARB(floats[i].loc, floats[i].values[0], floats[i].values[1]); break;
-					} else {
-						glUniform2fvARB(floats[i].loc, floats[i].size*floats[i].arraySize, floats[i].values); break;
-					}
-				case 3:
-					if (floats[i].arraySize == 1){
-						glUniform3fARB(floats[i].loc, floats[i].values[0], floats[i].values[1], floats[i].values[2]); break;
-					} else {
-						glUniform3fvARB(floats[i].loc, floats[i].size*floats[i].arraySize, floats[i].values); break;
-					}
-				case 4:
-					if (floats[i].arraySize == 1){
-						glUniform4fARB(floats[i].loc, floats[i].values[0], floats[i].values[1], floats[i].values[2], floats[i].values[3]); break;
-					} else {
-						glUniform4fvARB(floats[i].loc, floats[i].size*floats[i].arraySize, floats[i].values); break;
-					}
-			}
-		} else {
-			switch(floats[i].size){
-				case 2:
-					glUniformMatrix2fvARB(floats[i].loc, floats[i].size*floats[i].arraySize, false, floats[i].values); break;
-				case 3:
-					glUniformMatrix3fvARB(floats[i].loc, floats[i].size*floats[i].arraySize, false, floats[i].values); break;
-				case 4:
-					glUniformMatrix4fvARB(floats[i].loc, floats[i].size*floats[i].arraySize, false, floats[i].values); break;
+		if (floats[i].values[0] >= 0){
+			if (!floats[i].mat){
+				switch(floats[i].size){
+					case 1:
+						if (floats[i].arraySize == 1){
+							glUniform1fARB(floats[i].loc, floats[i].values[0]); break;
+						} else {
+							glUniform1fvARB(floats[i].loc, floats[i].size*floats[i].arraySize, floats[i].values); break;
+						}
+					case 2:
+						if (floats[i].arraySize == 1){
+							glUniform2fARB(floats[i].loc, floats[i].values[0], floats[i].values[1]); break;
+						} else {
+							glUniform2fvARB(floats[i].loc, floats[i].size*floats[i].arraySize, floats[i].values); break;
+						}
+					case 3:
+						if (floats[i].arraySize == 1){
+							glUniform3fARB(floats[i].loc, floats[i].values[0], floats[i].values[1], floats[i].values[2]); break;
+						} else {
+							glUniform3fvARB(floats[i].loc, floats[i].size*floats[i].arraySize, floats[i].values); break;
+						}
+					case 4:
+						if (floats[i].arraySize == 1){
+							glUniform4fARB(floats[i].loc, floats[i].values[0], floats[i].values[1], floats[i].values[2], floats[i].values[3]); break;
+						} else {
+							glUniform4fvARB(floats[i].loc, floats[i].size*floats[i].arraySize, floats[i].values); break;
+						}
+				}
+			} else {
+				switch(floats[i].size){
+					case 2:
+						glUniformMatrix2fvARB(floats[i].loc, floats[i].size*floats[i].arraySize, false, floats[i].values); break;
+					case 3:
+						glUniformMatrix3fvARB(floats[i].loc, floats[i].size*floats[i].arraySize, false, floats[i].values); break;
+					case 4:
+						glUniformMatrix4fvARB(floats[i].loc, floats[i].size*floats[i].arraySize, false, floats[i].values); break;
+				}
 			}
 		}
 	}
 	for (unsigned int i=0;i<ints.size();i++){
-		switch(ints[i].size){
-			case 1:
-				if (ints[i].arraySize == 1){
-					glUniform1iARB(ints[i].loc, ints[i].values[0]); break;
-				} else {
-					glUniform1ivARB(ints[i].loc, ints[i].size*ints[i].arraySize, ints[i].values); break;
-				}
-			case 2:
-				if (ints[i].arraySize == 1){
-					glUniform2iARB(ints[i].loc, ints[i].values[0], ints[i].values[1]); break;
-				} else {
-					glUniform2ivARB(ints[i].loc, ints[i].size*ints[i].arraySize, ints[i].values); break;
-				}
-			case 3:
-				if (ints[i].arraySize == 1){
-					glUniform3iARB(ints[i].loc, ints[i].values[0], ints[i].values[1], ints[i].values[2]); break;
-				} else {
-					glUniform3ivARB(ints[i].loc, ints[i].size*ints[i].arraySize, ints[i].values); break;
-				}
-			case 4:
-				if (ints[i].arraySize == 1){
-					glUniform4iARB(ints[i].loc, ints[i].values[0], ints[i].values[1], ints[i].values[2], ints[i].values[3]); break;
-				} else {
-					glUniform4ivARB(ints[i].loc, ints[i].size*ints[i].arraySize, ints[i].values); break;
-				}
+		if (ints[i].values[0] >= 0){
+			switch(ints[i].size){
+				case 1:
+					if (ints[i].arraySize == 1){
+						glUniform1iARB(ints[i].loc, ints[i].values[0]); break;
+					} else {
+						glUniform1ivARB(ints[i].loc, ints[i].size*ints[i].arraySize, ints[i].values); break;
+					}
+				case 2:
+					if (ints[i].arraySize == 1){
+						glUniform2iARB(ints[i].loc, ints[i].values[0], ints[i].values[1]); break;
+					} else {
+						glUniform2ivARB(ints[i].loc, ints[i].size*ints[i].arraySize, ints[i].values); break;
+					}
+				case 3:
+					if (ints[i].arraySize == 1){
+						glUniform3iARB(ints[i].loc, ints[i].values[0], ints[i].values[1], ints[i].values[2]); break;
+					} else {
+						glUniform3ivARB(ints[i].loc, ints[i].size*ints[i].arraySize, ints[i].values); break;
+					}
+				case 4:
+					if (ints[i].arraySize == 1){
+						glUniform4iARB(ints[i].loc, ints[i].values[0], ints[i].values[1], ints[i].values[2], ints[i].values[3]); break;
+					} else {
+						glUniform4ivARB(ints[i].loc, ints[i].size*ints[i].arraySize, ints[i].values); break;
+					}
+			}
 		}
 	}
 }

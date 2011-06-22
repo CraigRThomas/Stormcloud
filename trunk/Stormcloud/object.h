@@ -14,6 +14,8 @@
 #include <il/il.h>
 #include <math.h>
 #include "mesh.h"
+#include "shader.h"
+#include "shaderMgr.h"
 
 class Object {
 public:
