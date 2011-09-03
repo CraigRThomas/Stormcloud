@@ -33,6 +33,7 @@ class Shader {
 public:
 	std::vector<UniformFloat> floats;	/**< Collection of uniform floats to be sent to the GPU. */
 	std::vector<UniformInt> ints;		/**< Collection of uniform ints to be sent to the GPU. */
+	std::vector<UniformFloat> attribs;	/**< Collection of attributes to be sent to the GPU. */
 
 	/** Default constructor. */
 	Shader(void);
@@ -61,46 +62,50 @@ public:
 	/** Sends a matrix to the GPU. */
 	void sendMatrix(char* name, float value[]);
 	/** Takes care of actually sending the data to the GPU. */
-	void updateUniforms(void);
+	void updateVars(void);
 	/** Gets the location of each uniform variable from the current shader program. */
-	void getUniformLocations(unsigned int proc_id);
+	void getLocations(unsigned int proc_id);
+	/** Returns the memory location of the array holding the values for the specified variable. */
+	float* getFloat(char* name);
+	/** Returns the memory location of the array holding the values for the specified variable. */
+	int* getInt(char* name);
 
 	// Various useful shader-related functions defined in GLEXT.H 
-	static PFNGLCREATEPROGRAMOBJECTARBPROC   glCreateProgramObjectARB;
-	static PFNGLCREATESHADEROBJECTARBPROC    glCreateShaderObjectARB;
-	static PFNGLLINKPROGRAMARBPROC           glLinkProgramARB;
-	static PFNGLCOMPILESHADERARBPROC         glCompileShaderARB;
-	static PFNGLGETINFOLOGARBPROC            glGetInfoLogARB;
-	static PFNGLDELETEOBJECTARBPROC          glDeleteObjectARB;
-	static PFNGLUSEPROGRAMOBJECTARBPROC      glUseProgramObjectARB;
-	static PFNGLSHADERSOURCEARBPROC          glShaderSourceARB;
-	static PFNGLATTACHOBJECTARBPROC          glAttachObjectARB;
-	static PFNGLDETACHOBJECTARBPROC          glDetachObjectARB;
-	static PFNGLGETOBJECTPARAMETERIVARBPROC  glGetObjectParameterivARB;
-	static PFNGLGETUNIFORMLOCATIONARBPROC    glGetUniformLocationARB;
-	static PFNGLUNIFORM4FARBPROC             glUniform4fARB;
-	static PFNGLUNIFORM3FARBPROC			 glUniform3fARB;
-	static PFNGLUNIFORM2FARBPROC			 glUniform2fARB;
-	static PFNGLUNIFORM1FARBPROC             glUniform1fARB;
-	static PFNGLUNIFORM4IARBPROC             glUniform4iARB;
-	static PFNGLUNIFORM3IARBPROC             glUniform3iARB;
-	static PFNGLUNIFORM2IARBPROC             glUniform2iARB;
-	static PFNGLUNIFORM1IARBPROC             glUniform1iARB;
-	static PFNGLUNIFORM1FVARBPROC			 glUniform1fvARB;
-	static PFNGLUNIFORM2FVARBPROC			 glUniform2fvARB;
-	static PFNGLUNIFORM3FVARBPROC			 glUniform3fvARB;
-	static PFNGLUNIFORM4FVARBPROC			 glUniform4fvARB;
-	static PFNGLUNIFORM1IVARBPROC			 glUniform1ivARB;
-	static PFNGLUNIFORM2IVARBPROC			 glUniform2ivARB;
-	static PFNGLUNIFORM3IVARBPROC			 glUniform3ivARB;
-	static PFNGLUNIFORM4IVARBPROC			 glUniform4ivARB;
-	static PFNGLUNIFORMMATRIX2FVARBPROC		 glUniformMatrix2fvARB;
-	static PFNGLUNIFORMMATRIX3FVARBPROC		 glUniformMatrix3fvARB;
-	static PFNGLUNIFORMMATRIX4FVARBPROC		 glUniformMatrix4fvARB;
-	static PFNGLGETATTRIBLOCATIONARBPROC	 glGetAttribLocationARB;
-	static PFNGLVERTEXATTRIBPOINTERPROC		 glVertexAttribPointer;
-	static PFNGLENABLEVERTEXATTRIBARRAYPROC	 glEnableVertexAttribArray;
-	static PFNGLDISABLEVERTEXATTRIBARRAYPROC glDisableVertexAttribArray;
+	static PFNGLCREATEPROGRAMOBJECTARBPROC   glCreateProgramObjectARB;	/**< Creates an empty shader program. */
+	static PFNGLLINKPROGRAMARBPROC           glLinkProgramARB;			/**< Links the specified program to the GPU. */
+	static PFNGLCREATESHADEROBJECTARBPROC    glCreateShaderObjectARB;	/**< Creates an empty shader. */
+	static PFNGLCOMPILESHADERARBPROC         glCompileShaderARB;		/**< Compiles the shader code. */
+	static PFNGLGETINFOLOGARBPROC            glGetInfoLogARB;			/**< Returns useful debug info. */
+	static PFNGLDELETEOBJECTARBPROC          glDeleteObjectARB;			/**< Deletes the specified program object. */
+	static PFNGLUSEPROGRAMOBJECTARBPROC      glUseProgramObjectARB;		/**< Tells OpenGL which program to use. */
+	static PFNGLSHADERSOURCEARBPROC          glShaderSourceARB;			/**< Passes shader source code to the specified shader object. */
+	static PFNGLATTACHOBJECTARBPROC          glAttachObjectARB;			/**< Attaches a shader object to a program object. */
+	static PFNGLDETACHOBJECTARBPROC          glDetachObjectARB;			/**< Detaches a shader object from a program object. */
+	static PFNGLGETOBJECTPARAMETERIVARBPROC  glGetObjectParameterivARB;	/**< Stores the specified integer parameter in the specified integer argument. */
+	static PFNGLGETUNIFORMLOCATIONARBPROC    glGetUniformLocationARB;	/**< Returns the location of the specified uniform variable in the program object. */
+	static PFNGLUNIFORM4FARBPROC             glUniform4fARB;			/**< Passes 4 floating point numbers to the specified vec4. */
+	static PFNGLUNIFORM3FARBPROC			 glUniform3fARB;			/**< Passes 3 floating point numbers to the specified vec3. */
+	static PFNGLUNIFORM2FARBPROC			 glUniform2fARB;			/**< Passes 2 floating point numbers to the specified vec2. */
+	static PFNGLUNIFORM1FARBPROC             glUniform1fARB;			/**< Passes a floating point number to the specified float. */
+	static PFNGLUNIFORM4IARBPROC             glUniform4iARB;			/**< Passes 4 integers to the specified ivec4. */
+	static PFNGLUNIFORM3IARBPROC             glUniform3iARB;			/**< Passes 3 integers to the specified ivec3. */
+	static PFNGLUNIFORM2IARBPROC             glUniform2iARB;			/**< Passes 2 integers to the specified ivec2. */
+	static PFNGLUNIFORM1IARBPROC             glUniform1iARB;			/**< Passes an integer to the specified int. */
+	static PFNGLUNIFORM1FVARBPROC			 glUniform1fvARB;			/**< Passes an array of single floats. */
+	static PFNGLUNIFORM2FVARBPROC			 glUniform2fvARB;			/**< Passes an array of vec2 floats. */
+	static PFNGLUNIFORM3FVARBPROC			 glUniform3fvARB;			/**< Passes an array of vec3 floats. */
+	static PFNGLUNIFORM4FVARBPROC			 glUniform4fvARB;			/**< Passes an array of vec4 floats. */
+	static PFNGLUNIFORM1IVARBPROC			 glUniform1ivARB;			/**< Passes an array of single ints. */
+	static PFNGLUNIFORM2IVARBPROC			 glUniform2ivARB;			/**< Passes an array of ivec2 ints. */
+	static PFNGLUNIFORM3IVARBPROC			 glUniform3ivARB;			/**< Passes an array of ivec3 ints. */
+	static PFNGLUNIFORM4IVARBPROC			 glUniform4ivARB;			/**< Passes an array of ivec4 ints. */
+	static PFNGLUNIFORMMATRIX2FVARBPROC		 glUniformMatrix2fvARB;		/**< Passes an array of 4 floats for a mat2. */
+	static PFNGLUNIFORMMATRIX3FVARBPROC		 glUniformMatrix3fvARB;		/**< Passes an array of 9 floats for a mat3. */
+	static PFNGLUNIFORMMATRIX4FVARBPROC		 glUniformMatrix4fvARB;		/**< Passes an array of 16 floats for a mat4. */
+	static PFNGLGETATTRIBLOCATIONARBPROC	 glGetAttribLocationARB;	/**< Returns the location of a generic vertex attribute. */
+	static PFNGLVERTEXATTRIBPOINTERPROC		 glVertexAttribPointer;		/**< Sets the location the specified vertex attribute gets its data from. */
+	static PFNGLBINDBUFFERARBPROC			 glBindBuffer;				/**< Sets the active buffer. */
+	static PFNGLENABLEVERTEXATTRIBARRAYPROC  glEnableVertexAttribArray; /**< Enables an array of data for the specified vertex attribute. */
 
 private:
 	ShaderType _type;			/**< Type of shader (vertex, geometry, pixel). */

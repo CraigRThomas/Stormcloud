@@ -2,6 +2,7 @@
 
 #include <vector>
 #include "vector3f.h"
+#include "quaternion.h"
 
 /**
 	Floating point matrix class.
@@ -45,6 +46,7 @@ public:
 	void populate(const float[]);
 	/** Assigns a single element specified by the first two arguments. */
 	void populate(unsigned, unsigned, float);
+	void populate(Quaternion &rotation, Vector3f &translation);
 	/** Modifies the specified element. */
 	void modValue(unsigned, unsigned, float);
 	/** Returns the minor of the matrix. The minor is the matrix without the _rowth row and _colth column. */

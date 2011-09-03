@@ -8,9 +8,9 @@ Matrix::Matrix(){
 
 	std::vector<float> d;
 	data.clear();
-	for (int i=0;i<rows;i++){		
+	for (unsigned int i=0;i<rows;i++){		
 		data.push_back(d);
-		for (int j=0;j<cols;j++){		
+		for (unsigned int j=0;j<cols;j++){		
 			data[i].push_back(0.f);
 		}
 	}
@@ -28,9 +28,9 @@ Matrix::Matrix(int _rows, int _cols, bool _ident){
 	std::vector<float> d;
 	float f;
 	data.clear();
-	for (int i=0;i<rows;i++){		
+	for (unsigned int i=0;i<rows;i++){		
 		data.push_back(d);
-		for (int j=0;j<cols;j++){		
+		for (unsigned int j=0;j<cols;j++){		
 			f = (i == j && _ident) ? 1.0f : 0.0f;
 			data[i].push_back(f);
 		}
@@ -47,9 +47,9 @@ const Matrix& Matrix::operator=(const Matrix& m){
 
 	std::vector<float> d;
 	data.clear();
-	for (int i=0;i<m.rows;i++){		
+	for (unsigned int i=0;i<m.rows;i++){		
 		data.push_back(d);
-		for (int j=0;j<m.cols;j++){	
+		for (unsigned int j=0;j<m.cols;j++){	
 			data[i].push_back(m.data[i][j]);
 		}
 	}
@@ -102,6 +102,7 @@ Matrix operator+(const Matrix& m1, const Matrix& m2){
 					sum.data[i][j] = m1.data[i][j] + m2.data[i][j];
 				}
 			}
+			return sum;
 		} else {
 			throw 200;
 		}
@@ -121,6 +122,7 @@ Matrix operator-(const Matrix& m1, const Matrix& m2){
 					sum.data[i][j] = m1.data[i][j] - m2.data[i][j];
 				}
 			}
+			return sum;
 		} else {
 			throw 200;
 		}
@@ -218,6 +220,29 @@ void Matrix::populate(unsigned row, unsigned col, float value){
 	data[row][col] = value;
 }
 
+void Matrix::populate(Quaternion &rotation, Vector3f &translation){
+	float x = rotation.x, y = rotation.y, z = rotation.z, w = rotation.w;
+	data[0][0] = 1.f - 2.f * (y*y + z*z);
+	data[0][1] = 2.f * (x*y + z*w);
+	data[0][2] = 2.f * (x*z - y*w);
+	data[0][3] = translation.x;
+
+	data[1][0] = 2.f * (x*y - z*w);
+	data[1][1] = 1.f - 2.f * (x*x + z*z);
+	data[1][2] = 2.f * (z*y + x*w);
+	data[1][3] = translation.y;
+
+	data[2][0] = 2.f * (x*z + y*w);
+	data[2][1] = 2.f * (y*z - x*w);
+	data[2][2] = 1.f - 2.f * (x*x + y*y);
+	data[2][3] = translation.z;
+
+	data[3][0] = 0.f;
+	data[3][1] = 0.f;
+	data[3][2] = 0.f;
+	data[3][3] = 1.f;
+}
+
 Vector3f operator*(const Matrix& m, const Vector3f& v){
 	Matrix vec(3,1);
 	vec.populate(0,0,v.x);
@@ -229,17 +254,17 @@ Vector3f operator*(const Matrix& m, const Vector3f& v){
 }
 
 void Matrix::homogeneous3D(const float &xRot, const float &yRot, const float &zRot, const Vector3f &translation){
-	float sx = sin(xRot*3.1415/180.f), cx = cos(xRot*3.1415/180.f);
-	float sy = sin(yRot*3.1415/180.f), cy = cos(yRot*3.1415/180.f);
-	float sz = sin(zRot*3.1415/180.f), cz = cos(zRot*3.1415/180.f);
+	float sx = sin(xRot*3.1415f/180.f), cx = cos(xRot*3.1415f/180.f);
+	float sy = sin(yRot*3.1415f/180.f), cy = cos(yRot*3.1415f/180.f);
+	float sz = sin(zRot*3.1415f/180.f), cz = cos(zRot*3.1415f/180.f);
 
 	rows = 4;
 	cols = 4;
 	std::vector<float> d;
 	data.clear();
-	for (int i=0;i<rows;i++){		
+	for (unsigned int i=0;i<rows;i++){		
 		data.push_back(d);
-		for (int j=0;j<cols;j++){		
+		for (unsigned int j=0;j<cols;j++){		
 			data[i].push_back(0.f);
 		}
 	}

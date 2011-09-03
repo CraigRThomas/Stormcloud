@@ -95,14 +95,14 @@ void ShaderManager::updateCurrentShaderProc(void){
 			Shader::glUseProgramObjectARB((*i)->proc);
 			if ((*i)->vtShader){
 				if (!vtShaders.empty()){
-					vtShaders.top()->getUniformLocations((*i)->proc);
-					vtShaders.top()->updateUniforms();
+					vtShaders.top()->getLocations((*i)->proc);
+					vtShaders.top()->updateVars();
 				}
 			}
 			if ((*i)->pxShader){
 				if (!pxShaders.empty()){
-					pxShaders.top()->getUniformLocations((*i)->proc);
-					pxShaders.top()->updateUniforms();
+					pxShaders.top()->getLocations((*i)->proc);
+					pxShaders.top()->updateVars();
 				}
 			}
 			return;
@@ -140,14 +140,14 @@ void ShaderManager::updateCurrentShaderProc(void){
 		Shader::glUseProgramObjectARB(newShaderProc->proc);
 		if (newShaderProc->vtShader){
 			if (!vtShaders.empty()){
-				vtShaders.top()->getUniformLocations(newShaderProc->proc);
-				vtShaders.top()->updateUniforms();
+				vtShaders.top()->getLocations(newShaderProc->proc);
+				vtShaders.top()->updateVars();
 			}
 		}
 		if (newShaderProc->pxShader){
 			if (!pxShaders.empty()){
-				pxShaders.top()->getUniformLocations(newShaderProc->proc);
-				pxShaders.top()->updateUniforms();
+				pxShaders.top()->getLocations(newShaderProc->proc);
+				pxShaders.top()->updateVars();
 			}
 		}
 	}
@@ -181,9 +181,9 @@ void ShaderManager::init(){
 
 void ShaderManager::update(){
 	if (!vtShaders.empty()){
-		vtShaders.top()->updateUniforms();
+		vtShaders.top()->updateVars();
 	}
 	if (!pxShaders.empty()){
-		pxShaders.top()->updateUniforms();
+		pxShaders.top()->updateVars();
 	}
 }

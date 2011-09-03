@@ -50,14 +50,17 @@ void Mesh::allocateBuffers(){
 }
 
 void Mesh::update(const GLfloat &dt){
+	
+}
+
+void Mesh::draw(){
+
 	//rebuffer the vertex, normal, and tex coord data
 	glBindBuffer(GL_ARRAY_BUFFER, buffers[DATA_BUFFER]);
 	glBufferSubData(GL_ARRAY_BUFFER, 0, num_verts*3*sizeof(GLfloat), vertices);
 	glBufferSubData(GL_ARRAY_BUFFER, num_verts*3*sizeof(GLfloat), num_verts*3*sizeof(GLfloat), normals);
 	glBufferSubData(GL_ARRAY_BUFFER, num_verts*6*sizeof(GLfloat), num_verts*2*sizeof(GLfloat), texCoords);
-}
 
-void Mesh::draw(){
 	if (vertShader){
 		ShaderMgr.push(vertShader);
 	}
@@ -65,6 +68,7 @@ void Mesh::draw(){
 		ShaderMgr.push(fragShader);
 	}
 	ShaderMgr.checkInvalid();
+	ShaderMgr.update();
 
 	glEnable(GL_TEXTURE_2D);
 	glBindTexture(GL_TEXTURE_2D, texId);

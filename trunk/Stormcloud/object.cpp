@@ -30,6 +30,7 @@ bool Object::loadFromFile(char *path){
 	Mesh* temp = 0;
 	while(f.good()){
 		getline(f,line);
+		if (line.length() == 0) break;
 		if (strstr(line.c_str(),"begin ")){
 			temp = new Mesh();
 			sscanf(line.c_str(),"%*s %s",temp->groupName);

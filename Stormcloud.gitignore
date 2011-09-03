@@ -1,0 +1,6 @@
+*.exe
+*.ipch
+*.user
+*.filters
+*.suo
+*.sdf
