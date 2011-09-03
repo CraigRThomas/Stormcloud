@@ -1,0 +1,456 @@
+global proc cancel(){
+	global int $fileId;
+	global int $weightFileId;
+	global int $jointFileId;
+	global string $mesh[];
+	select $mesh;
+	if ($fileId>=0) fclose $fileId;
+	if ($weightFileId>=0) fclose $weightFileId;
+	if ($jointFileId>=0) fclose $jointFileId;
+	error "Export cancelled.";
+}
+
+global proc int [] componentRange( string $select ) {
+	string $buffer[];
+	int $i, $tokens;
+	int $elements[2];
+	
+	$tokens = `tokenize $select "[:]" $buffer`;
+	
+	$elements[0] = int ( $buffer[1] );
+	$elements[1] = -1;
+	
+	if ( $tokens > 2){
+		$elements[1] = int ( $buffer[2] );
+	}
+	
+	return $elements;
+}
+
+global proc recPrintJointChildren( int $file, string $obj, int $gen ){
+	float $pos[] = `joint -q -p $obj`;
+	for ($i=0;$i<$gen;$i++){
+		fprint $file "\t";
+	}
+	fprint $file ($obj + " " + $pos[0] + " " + $pos[1] + " " + $pos[2] + " {\n");
+	string $children[] = `listRelatives -c $obj`;
+	for ($eachChild in $children){
+		recPrintJointChildren($file, $eachChild, $gen+1);
+	}
+	for ($i=0;$i<$gen;$i++){
+		fprint $file "\t";
+	}
+	fprint $file "}\n";
+}
+
+global proc string rootNode( string $obj){
+	string $buf[];
+	tokenize $obj "." $buf;
+	return $buf[0];
+}
+
+global proc writeMesh(){
+	global int $fileId;
+	global int $weightFileId;
+	global int $jointFileId;
+	global string $mesh[];
+	global int $saveTextures;
+	global int $saveJoints;
+	global int $saveWeights;
+	global int $saveMesh;
+	
+	progressWindow -ep;
+	progressWindow -t "Mesh Export Progress" -ii true ;
+	
+	string $verts[];
+	int $uvsPerVtx[];
+	int $num_verts = 0;
+	for ( $eachMesh in $mesh){
+		if ($saveMesh){
+			int $numTexFiles = 0;
+			int $num_norms = 0, $num_uvs = 0, $num_faces = 0, $uvOffset[];
+			int $uv_used[];
+			string $faces[];
+			float $uvs[];
+			
+			fprint $fileId ( "begin " + $eachMesh + "\n");
+			select $eachMesh;
+			
+			
+			/** COUNT VERTICES **/
+			PolySelectConvert 3;
+			$verts = `ls -fl -sl`;
+			$num_verts = `size($verts)`;
+			fprint $fileId ( "num_verts " + $num_verts + "\n");
+			
+			
+			/** COUNT NORMALS **/
+			$num_norms = $num_verts;
+			fprint $fileId ( "num_norms " + $num_norms + "\n");
+			
+			
+			/** COUNT UVS **/
+			int $count = 0;
+			for ( $eachVert in $verts ){
+				$uvsPerVtx[$count] = 0;
+				string $maps[] = `polyListComponentConversion -fv -tuv $eachVert`;
+				for ( $eachMap in $maps ){
+					float $tex[] = `polyEditUV -q $eachMap`;
+					for ( $eachTex in $tex ){
+						$uvs[$num_uvs] = $eachTex;
+						$num_uvs++;
+						$uvsPerVtx[$count] += 1;
+					}
+				}
+				$uvsPerVtx[$count] /= 2;
+				if ( $count > 0) { 
+					$uvOffset[$count] = $uvOffset[$count - 1] + $uvsPerVtx[$count - 1];
+				}
+				$count++;
+				
+			}
+			$num_uvs /= 2;
+			for ($i=0;$i<$num_uvs;$i++){
+				$uv_used[$i] = false;
+			}
+			fprint $fileId ("num_texcoords " + $num_uvs + "\n");
+			
+			
+			/** COUNT FACES **/
+			PolySelectConvert 1;
+			$faces = `ls -fl -sl`;
+			for ($eachFace in $faces){
+				string $faceSize[] = `polyInfo -fv $eachFace`;
+				tokenize $faceSize[0] $faceSize;
+				int $s = `size($faceSize)`-4;
+				$num_faces += $s;
+			}
+			fprint $fileId ("num_faces " + $num_faces + "\n");
+			
+			
+			/** WRITE VERTICES **/
+			progressWindow -e -max $num_verts -st "Building vertex list...";
+			$count = 0;
+			fprint $fileId "start verts\n";
+			for ($eachVert in $verts){
+				if (`progressWindow -q -ic`) cancel;
+				float $values[] = `pointPosition -l $eachVert`;
+				fprint $fileId ("v " + $uvsPerVtx[$count] + " ");
+				for ($eachVal in $values){
+					fprint $fileId ($eachVal + " ");
+				}
+				fprint $fileId "\n";
+				$count++;
+				progressWindow -e -pr $count;
+			}
+			
+			
+			/** WRITE NORMALS **/
+			progressWindow -e -max $num_norms -pr 0 -st "Building normal list...";
+			$count = 0;
+			fprint $fileId "start norms\n";
+			for ($eachVert in $verts){
+				if (`progressWindow -q -ic`) cancel;
+				float $norms[] = `polyNormalPerVertex -q -xyz $eachVert`;
+				float $n[3];
+				int $s = `size($norms)`/3;
+				for ($i=0;$i<$s;$i++){
+					$n[0] += $norms[$i*3];
+					$n[1] += $norms[$i*3+1];
+					$n[2] += $norms[$i*3+2];
+				}
+				$n[0] /= $s;
+				$n[1] /= $s;
+				$n[2] /= $s;
+				fprint $fileId ("vn " + $uvsPerVtx[$count] + " " + $n[0] + " " + $n[1] + " " + $n[2] + "\n");
+				$count++;
+				progressWindow -e -pr $count;
+			}
+			
+			
+			/** WRITE UVS **/
+			progressWindow -e -max $num_uvs -pr 0 -st "Building UV list...";
+			$count = 0;
+			fprint $fileId "start texcoords\n";
+			for ($i=0;$i<$num_uvs;$i++){
+				if (`progressWindow -q -ic`) cancel;
+				fprint $fileId ("vt 1 " + $uvs[$count*2] + " " + $uvs[$count*2+1] + "\n");
+				$count++;
+				progressWindow -e -pr $count;
+			}
+			
+			
+			/** WRITE FACES **/
+			progressWindow -e -max $num_faces -pr 0 -st "Building face list...";
+			fprint $fileId "start faces\n";
+			$count = 0;
+			for ($eachFace in $faces){
+				if (`progressWindow -q -ic`) cancel;
+				string $f[] = `polyInfo -fv $eachFace`;
+				tokenize $f[0] $f;
+				int $s = `size($f)`-2;
+				
+				fprint $fileId ("f " + $s + " ");
+				
+				int $vertIndex = 2;
+				string $vFaces[] = `polyListComponentConversion -ff -tvf $eachFace`;
+				int $vFaceCount = 0;
+				string $maps[];
+				string $temp[];
+				for ($i=0;$i<`size($vFaces)`;$i++){
+					$temp = `polyListComponentConversion -fvf -tuv $vFaces[$i]`;
+					for ($j=0;$j<`size($temp)`;$j++){
+						$maps[$vFaceCount] = $temp[$j];
+						$vFaceCount++;
+					}
+				}
+				for ($eachMap in $maps){
+					int $mapRange[] = `componentRange($eachMap)`;
+					int $max = ($mapRange[1] >= 0) ? $mapRange[1] : $mapRange[0];
+					for ($i=$mapRange[0];$i<=$max;$i++){
+						string $mapQuery = ($eachMesh + ".map[" + $i + "]");
+						float $face_uvs[] = `polyEditUV -q $mapQuery`;
+						
+						int $vert = $f[$vertIndex];
+						int $index = $uvOffset[$vert];
+						int $v = 0;
+						int $reduce = 1;
+						for ($v;$v<$uvsPerVtx[$vert];$v++){
+							if ($face_uvs[0] == $uvs[($index)*2 + $v*2] && $face_uvs[1] == $uvs[($index)*2+$v*2+1]){
+								$reduce = 0;
+								break;
+							}
+						}
+						if ($reduce > 0) { $v -= 1; }
+						$index += $v;
+						fprint $fileId ($index + " ");
+						$vertIndex++;
+						if ($vertIndex >= `size($f)`){
+							$vertIndex = `size($f)`-1;
+						}
+					}
+					$count++;
+				}
+				
+				fprint $fileId "\n";
+				progressWindow -e -pr $count;
+			}
+		}
+		
+		
+		/** WRITE TEXPATH & MATERIAL PROPERTIES **/
+		string $shapes[];
+		if ($saveTextures){
+			$shapes = `listRelatives -s $eachMesh`;
+			string $dest[] = `listConnections -d true -s false -p false -t "shadingEngine" $shapes[0]`;
+			string $cur[] = `ls -sl`;
+			/** listConnections can return duplicates; the following checks for them **/
+			select -r -ne $dest;
+			$dest = `ls -sl`;
+			select -r $cur;
+			
+			string $material = rootNode(`connectionInfo -sfd ($dest[0] + ".surfaceShader")`);
+			string $tex = rootNode(`connectionInfo -sfd ($material + ".color")`);
+			vector $props = `getAttr($material + ".ambientColor")`;
+			print $props;
+			fprint $fileId ("mat ka " + $props + "\n");
+			vector $color = `getAttr($material + ".color")`;
+			
+			if (size($tex)){
+				$props = $color * `getAttr($material + ".diffuse")`;
+			} else {
+				float $f = `getAttr($material + ".diffuse")`;
+				$props = {$f,$f,$f};
+			}
+			fprint $fileId ("mat kd " + $props + "\n");
+			
+			if (`objExists($material + ".specularColor")`){
+				$props = `getAttr($material + ".specularColor")`;
+				fprint $fileId ("mat ks " + $props + "\n");
+			}
+			
+			if (`objExists($material + ".cosinePower")`){
+				float $power = `getAttr($material + ".cosinePower")`;
+				fprint $fileId ("mat ns " + $power + "\n");
+			}
+			
+			if ($tex != ""){
+				string $filename = getAttr($tex + ".fileTextureName");
+				$filename = `basename $filename ""`;
+				$filename = "textures/" + $filename;
+				fprint $fileId ("texpath " + $filename + "\n");
+			} else {
+				print "Textures not found, continuing without.\n";
+			}
+		}
+		
+		if ($saveMesh){
+			fprint $fileId ("end " + $eachMesh + "\n");
+		}
+		
+		
+		/** WRITE WEIGHTS**/
+		string $bones[];
+		if ($saveWeights){
+			string $cluster[] = `listConnections -t "skinCluster" $shapes[0]`;
+			if (`size($cluster)` == 0){
+				print ($eachMesh + " does not have a smooth bound skin. .weights file not saved. Continuing happily.\n");
+			} else {
+				$bones = `skinCluster -q -inf $shapes[0]`;
+				progressWindow -e -max $num_verts -pr 0 -st "Writing weights...";
+				
+				for ($eachBone in $bones){
+					fprint $weightFileId ($eachBone + ":");
+				}
+				fprint $weightFileId "\n";
+				
+				int $count = 0;
+				for ($eachVert in $verts){
+					if (`progressWindow -q -ic`) cancel;
+					float $values[] = `skinPercent -q -v $cluster[0] $eachVert`;
+					for ($i=0;$i<$uvsPerVtx[$count];$i++){
+						fprint $weightFileId ($count + ":");
+						for ($eachValue in $values){
+							fprint $weightFileId ($eachValue + ":");
+						}
+						fprint $weightFileId "\n";
+					}
+					$count++;
+					progressWindow -e -pr $count;
+				}
+			}
+		}
+		
+		
+		/**WRITE JOINTS**/
+		fprint $jointFileId ("begin " + $eachMesh + "\n");
+		if ($saveJoints){
+			string $root = $bones[0];
+			recPrintJointChildren($jointFileId, $root, 0);
+		}
+		fprint $jointFileId ("end " + $eachMesh + "\n");
+	}
+	progressWindow -ep;
+	print "Export successful.";
+}
+
+global proc writeMeshFile( string $fileName ){
+	global string $mesh[];
+	global int $fileId=-1;
+	global int $weightFileId=-1;
+	global int $jointFileId=-1;
+	global int $moveTexFiles;
+	global int $saveJoints;
+	global int $saveWeights;
+	global int $saveMB;
+	global int $saveMesh;
+	
+	string $str[] = `stringToStringArray $fileName "."`;
+	$fileName = $str[0];
+	clear $str;
+	
+	if ($saveMesh){ 	$fileId 			= `fopen ($fileName+".mesh") "w"`; }
+	if ($saveWeights){	$weightFileId	= `fopen ($fileName + ".weights") "w"`; }
+	if ($saveJoints){ 	$jointFileId 	= `fopen ($fileName + ".joints") "w"`; }
+	
+	writeMesh;
+	
+	if ($saveMesh){ 	fclose $fileId; }
+	if ($saveWeights){	fclose $weightFileId; }
+	if ($saveJoints){ 	fclose $jointFileId; }
+	
+	if ($saveMB){
+		string $f = $fileName + ".mb";
+		file -rn $f;
+		file -s -typ "mayaBinary";
+	}
+	
+	if ($moveTexFiles){
+		string $texFiles[] = `ls -type "file"`;
+		for ($eachFile in $texFiles){
+			string $fn = getAttr($eachFile + ".fileTextureName");
+			string $nfn = `basename $fn ""`;
+			if (`filetest -d "textures"`){
+				sysFile -copy ("textures/" + $nfn) $fn;
+			} else {
+				sysFile -copy ($nfn) $fn;
+				string $dir = dirname(`file -q -loc ("models/"+$nfn)`);
+				print $dir;
+				sysFile -md ( $dir + "/textures/");
+				sysFile -move ("textures/" + $nfn) $nfn;
+			}
+		}
+	}
+	
+	select $mesh;
+}
+
+global proc writeFile( string $fileName, string $fileType){
+	writeMeshFile( $fileName );
+}
+
+global proc fileLocationPrompt(){
+	deleteUI optionsWindow;
+	float $version = `getApplicationVersionAsFloat`;
+
+	if ( $version < 2011){
+		fileBrowserDialog -m 1 -fc "writeFile" -an "Save" -ds 2 -wt "Save Mesh";
+	} else {
+		string $result[] = `fileDialog2 -ds 2`;
+		if (`size($result)`==0) cancel;
+		writeMeshFile( $result[0] );
+	}
+}
+
+global proc exportMesh(){
+	global string $mesh[];
+	global int $moveTexFiles;
+	global int $saveTextures;
+	global int $saveJoints;
+	global int $saveWeights;
+	global int $saveMB;
+	global int $saveMesh;
+	
+	string $mesh[] = `ls -sl`;
+	if (! `selectMode -q -o`){
+		selectMode -o ;
+		$mesh = `ls -sl`;
+	}
+	
+	if (size( $mesh ) == 0){	
+		error "No mesh selected.";
+	}
+	
+	int $moveTexFiles=0, $saveTextures=1, $saveJoints=1, $saveWeights=1, $saveMB=0, $saveMesh=1;
+	
+	if (`window -exists optionsWindow`){
+		deleteUI optionsWindow;
+	}
+	window -t "Mesh Export Options" -s false -w 300 -h 150 optionsWindow;
+	formLayout -nd 100 optionsForm;
+		checkBox -l "Export .mesh" -onc "$saveMesh=1" -ofc "$saveMesh=0" -v $saveMesh meshChkBox;
+		checkBox -l "Include textures" -onc "$saveTextures=1" -ofc "$saveTextures=0" -v $saveTextures texChkBox;
+		//checkBox -l "Move texture files to model directory" -onc "$moveTexFiles=1" -ofc "$moveTexFiles=0" -v $moveTexFiles moveTexChkBox;
+		checkBox -l "Save rigged joints" -onc "$saveJoints=1" -ofc "$saveJoints=0" -v $saveJoints jointsChkBox;
+		checkBox -l "Save vertex weights" -onc "$saveWeights=1" -ofc "$saveWeights=0" -v $saveWeights weightsChkBox;
+		checkBox -l "Save .mb" -onc "$saveMB=1" -ofc "$saveMB=0" -v $saveMB mbChkBox;
+		
+		button -l "Export" -c "fileLocationPrompt()" exportButton;
+	
+	formLayout -e 
+		-af meshChkBox "top" 10
+		-af meshChkBox "left" 10
+		-af texChkBox "top" 30
+		-af texChkBox "left" 10
+		-af jointsChkBox "top" 50
+		-af jointsChkBox "left" 10
+		-af weightsChkBox "top" 70
+		-af weightsChkBox "left" 10
+		-af mbChkBox "top" 90
+		-af mbChkBox "left" 10
+		-af exportButton "bottom" 10
+		-af exportButton "left" 10
+	optionsForm;
+	showWindow optionsWindow;
+						
+}
