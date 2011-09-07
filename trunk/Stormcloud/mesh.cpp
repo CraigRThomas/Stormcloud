@@ -29,15 +29,18 @@ Mesh::Mesh(){
 
 Mesh::~Mesh(){
 	glDeleteBuffers(NUM_BUFFERS,buffers);
-	vertices = normals = texCoords = 0;
-	vertShader = fragShader = 0;
-	buffers = 0;
-	free(vertices);
-	free(normals);
-	free(texCoords);
-	free(buffers);
-	free(vertShader);
-	free(fragShader);
+	delete vertices;
+	vertices = NULL;
+	delete normals;
+	normals = NULL;
+	delete texCoords;
+	texCoords = NULL;
+	delete [] buffers;
+	buffers = NULL;
+	delete vertShader;
+	vertShader = NULL;
+	delete fragShader;
+	fragShader = NULL;
 }
 
 void Mesh::allocateBuffers(){

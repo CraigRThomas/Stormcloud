@@ -47,6 +47,7 @@ Shader::Shader(void){
 		init = true;
 	}
 	_priority = 0;
+	_compileCode = 0;
 }
 
 Shader::Shader(ShaderType type, char* filepath, unsigned int priority){
@@ -74,6 +75,7 @@ void Shader::load(char* filepath){
 	char* shaderSource = new char[shaderSourceLength];
 	f.seekg(0, std::ios_base::beg);
 	std::string str;
+	char* str_c;
 	
 	if(f.good()){
 		f.getline(shaderSource,shaderSourceLength,'\0');
@@ -89,17 +91,18 @@ void Shader::load(char* filepath){
 	bool mat = false;
 	while(f.good()){
 		getline(f,str);
-		if (strstr(str.c_str(),"uniform ") || strstr(str.c_str(),"attribute ")){
+		str_c = strdup(str.c_str());
+		if (strstr(str_c,"uniform ") || strstr(str_c,"attribute ")){
 			a.size = 0;
 			c.size = 0;
-			str = str.substr(0,(int)strcspn(str.c_str(),";"));
-			if (strchr(str.c_str(),'[')!=0){
+			str = str.substr(0,(int)strcspn(str_c,";"));
+			if (strchr(str_c,'[')!=0){
 				arraySize = str.substr(str.find("[")+1,str.find("]")-str.find("[")-1);
 				str = str.substr(0, str.find("["));
 			} else {
 				arraySize = "1";
 			}
-			sscanf_s(str.c_str(),"%*s %s %s",type,sizeof(type),name,sizeof(name));
+			sscanf_s(str_c,"%*s %s %s",type,sizeof(type),name,sizeof(name));
 			
 			if (strcmp(type,"float")==0){
 				a.size = 1;
@@ -131,7 +134,7 @@ void Shader::load(char* filepath){
 				}
 				a.loc = -1;
 				a.mat = mat;
-				if (strstr(str.c_str(),"uniform ")){
+				if (strstr(str_c,"uniform ")){
 					floats.push_back(a);
 				} else {
 					attribs.push_back(a);
@@ -167,15 +170,17 @@ void Shader::load(char* filepath){
 
 	}
 	f.close();
+	delete [] str_c;
+	str_c = NULL;
 
-	int result = 0;
+	_compileCode = 0;
 	
 	_shaderObject = glCreateShaderObjectARB(_type);
 	glShaderSourceARB(_shaderObject, 1, (const char**)&shaderSource, NULL);
 	glCompileShaderARB(_shaderObject);
-	glGetObjectParameterivARB(_shaderObject, GL_OBJECT_COMPILE_STATUS_ARB, &result);
+	glGetObjectParameterivARB(_shaderObject, GL_OBJECT_COMPILE_STATUS_ARB, &_compileCode);
 
-	if(!result){
+	if(!_compileCode){
 		int infoLogSize;
 		glGetObjectParameterivARB(_shaderObject, GL_OBJECT_INFO_LOG_LENGTH_ARB,&infoLogSize);
 		GLcharARB* infoLog = new GLcharARB[infoLogSize];
@@ -183,8 +188,7 @@ void Shader::load(char* filepath){
 		fprintf(stderr, "Error in shader compilation! (%s)\n", _filepath);
 		fprintf(stderr, "Info log: %s\n", infoLog);
 	}
-	
-	//delete[] shaderSource;
+	delete [] shaderSource;
 	shaderSource = NULL;
 }
 
@@ -240,6 +244,10 @@ unsigned int Shader::priority(void){
 
 ShaderType Shader::type(void){
 	return _type;
+}
+
+int Shader::compileCode(void){
+	return _compileCode;
 }
 
 float* Shader::getFloat(char* name){

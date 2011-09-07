@@ -51,6 +51,8 @@ public:
 	unsigned int priority(void);
 	/** Returns this shader's type. */
 	ShaderType type(void);
+	/** Returns the last error code for the shader **/
+	int compileCode(void);
 	/** Sends a float to the GPU. */
 	void send(char* name, float value);
 	/** Sends an array of floats to the GPU. */
@@ -112,8 +114,10 @@ private:
 	unsigned int _shaderObject;	/**< Shader id. */
 	unsigned int _priority;		/**< Shader priority level. */
 	char _filepath[255];		/**< File the shader was loaded from. */
+	int _compileCode; /**< Error code from shader compilation **/
+
 	/** Gets the process addresses for the functions defined in GLEXT.H. */
-	void initShaderProcs(void);	
+	void initShaderProcs(void);
 
 	static bool init;			/**< True once the above functions have been retrieved. */
 };

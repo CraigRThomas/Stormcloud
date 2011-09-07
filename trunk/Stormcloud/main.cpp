@@ -1,7 +1,3 @@
-#pragma comment(lib,"inc/DevIL.lib")
-#pragma comment(lib,"inc/ILUT.lib")
-#pragma comment(lib,"inc/fmodex_vc.lib")
-
 #include <iostream>
 #include <windows.h>
 #include <stdlib.h>

@@ -1,0 +1,9 @@
+*.exe
+*.ipch
+*.user
+*.filters
+*.suo
+*.sdf
+*.opensdf
+Debug
+Release

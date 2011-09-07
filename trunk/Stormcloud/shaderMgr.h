@@ -8,6 +8,10 @@
 
 typedef struct _ShaderProc{
 	unsigned int vtShader, pxShader, geoShader, proc;
+	int compileCode;
+	_ShaderProc(){
+		compileCode = 0;
+	}
 }ShaderProc;
 
 class ShaderManager {
