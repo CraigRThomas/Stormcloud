@@ -63,6 +63,12 @@
       <AdditionalLibraryDirectories>inc/;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>DevIL.lib;freeglut.lib;ILUT.lib;fmodex_vc.lib</AdditionalDependencies>
     </Link>
+    <PostBuildEvent>
+      <Command>copy $(ProjectDir)\..\$(Configuration)\$(ProjectName).exe $(ProjectDir)\$(ProjectName).exe</Command>
+    </PostBuildEvent>
+    <PostBuildEvent>
+      <Message>Copies the binary to the working source directory</Message>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -72,13 +78,22 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <AdditionalIncludeDirectories>C:\Software\freeglut-2.6.0\include;C:\Software\DevIL\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <TargetMachine>MachineX86</TargetMachine>
+      <AdditionalLibraryDirectories>inc/;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>DevIL.lib;freeglut.lib;ILUT.lib;fmodex_vc.lib</AdditionalDependencies>
     </Link>
+    <PostBuildEvent>
+      <Command>copy $(ProjectDir)\..\$(Configuration)\$(ProjectName).exe $(ProjectDir)\$(ProjectName).exe</Command>
+    </PostBuildEvent>
+    <PostBuildEvent>
+      <Message>Copies the binary to the working source directory</Message>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="inputMgr.cpp" />
