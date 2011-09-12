@@ -184,8 +184,8 @@ void Shader::load(char* filepath){
 		fprintf(stderr, "Info log: %s\n", infoLog);
 	}
 	
-	//delete[] shaderSource;
 	shaderSource = NULL;
+	free(shaderSource);
 }
 
 void Shader::initShaderProcs(void){
@@ -375,12 +375,19 @@ void Shader::updateVars(void){
 	for (unsigned int i=0;i<attribs.size();i++){
 		glBindBuffer(GL_ARRAY_BUFFER,0);
 		glEnableVertexAttribArray(attribs[i].loc);
-		glVertexAttribPointer(attribs[i].loc, 4, GL_FLOAT, GL_TRUE, 0, attribs[i].values);
+		/*if (strcmp(attribs[i].name,"vNormal")==0){
+			for (unsigned int j=0;j<12;j++){
+				std::cout<<attribs[i].values[j*3]<<" "<<attribs[i].values[j*3+1]<<" "<<attribs[i].values[j*3+2]<<"\n";
+			}
+		}*/
+		glVertexAttribPointer(attribs[i].loc, 3, GL_FLOAT, GL_TRUE, 0, attribs[i].values);
 	}
 			
 }
 
 void Shader::getLocations(unsigned int proc_id){
+	glUniform1iARB(glGetUniformLocationARB(proc_id,"image"),0);
+	glUniform1iARB(glGetUniformLocationARB(proc_id,"normMap"),1);
 	for (unsigned int i=0;i<floats.size();i++){
 		floats[i].loc = glGetUniformLocationARB(proc_id, floats[i].name);
 	}

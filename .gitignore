@@ -1,0 +1,10 @@
+*.exe
+*.ipch
+*.user
+*.filters
+*.suo
+*.sdf
+trunk/Debug
+trunk/Release
+trunk/Stormcloud/Debug
+trunk/Stormcloud/Release

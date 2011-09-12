@@ -304,8 +304,8 @@ void Matrix::homogeneous3D(const float &xRot, const float &yRot, const float &zR
 }
 
 const float* Matrix::getData(float d[]){
-	for (unsigned int i=0;i<16;i++){
-		d[i] = data[i%4][(int)floor((float)i/4)];
+	for (unsigned int i=0;i<rows*cols;i++){
+		d[i] = data[i%cols][(int)floor((float)i/rows)];
 	}
 	return d;
 }

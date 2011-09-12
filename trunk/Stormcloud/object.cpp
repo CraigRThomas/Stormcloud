@@ -50,6 +50,28 @@ bool Object::loadFromFile(char *path){
 			char buf[256];
 			sscanf(line.c_str(),"%*s %s",buf);
 			temp->texId = ilutGLLoadImage(buf);
+		} else if (strstr(line.c_str(),"normmappath ")){
+			char buf[256];
+			sscanf(line.c_str(),"%*s %s",buf);
+			temp->normMapId = ilutGLLoadImage(buf);
+			temp->normMapped = true;
+			temp->TBNs.clear();
+			for (unsigned int i=0;i<temp->num_faces;i++){
+				temp->TBNs.push_back(Matrix(3,3));
+			}
+			temp->vertShader = ShaderMgr.createShader(ShaderType::VERTEX, "shaders/normal2VS.glsl");
+			temp->fragShader = ShaderMgr.createShader(ShaderType::FRAGMENT, "shaders/normal2PS.glsl");
+			
+			for (unsigned int i=0;i<temp->vertShader->attribs.size();i++){
+				if (strcmp(temp->vertShader->attribs[i].name,"tangent")==0){
+					temp->vertShader->attribs[i].values = new float[temp->num_faces*3];
+				} else if (strcmp(temp->vertShader->attribs[i].name,"bitangent")==0){
+					temp->vertShader->attribs[i].values = new float[temp->num_faces*3];
+				} else if (strcmp(temp->vertShader->attribs[i].name,"vNormal")==0){
+					temp->vertShader->attribs[i].values = new float[temp->num_faces*3];
+				} 
+			}
+
 		} else if (strstr(line.c_str(),"num_verts ")){
 			count = 0;
 		} else if (strstr(line.c_str(),"num_norms ")){

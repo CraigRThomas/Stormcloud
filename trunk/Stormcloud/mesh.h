@@ -8,6 +8,7 @@
 #include <vector>
 #include "shader.h"
 #include "shaderMgr.h"
+#include "matrix.h"
 
 enum {
 	DATA_BUFFER = 0,
@@ -23,18 +24,21 @@ struct Material {
 
 class Mesh {
 public:
-	GLuint num_verts;		/**< Number of vertices. Also the number of normals and texcoords. */
-	GLfloat* vertices;		/**< List of vertices. */
-	GLfloat* normals;		/**< List of normals. */
-	GLfloat* texCoords;		/**< List of texture coordinates. */
-	GLuint* buffers;		/**< OpenGL GPU data buffer ids. */
-	char groupName[256];	/**< Mesh's group name. */
-	GLuint num_faces;		/**< Number of triangle faces composing this mesh. */
-	GLuint* faces;			/**< List of vertex/normal/tex coord indices for each face. */
-	GLuint texId;			/**< Registed texture id. */
-	Shader* vertShader;		/**< Vertex shader. */
-	Shader* fragShader;		/**< Fragment shader. */
-	Material mat;
+	GLuint num_verts;			/**< Number of vertices. Also the number of normals and texcoords. */
+	GLfloat* vertices;			/**< List of vertices. */
+	GLfloat* normals;			/**< List of normals. */
+	GLfloat* texCoords;			/**< List of texture coordinates. */
+	GLuint* buffers;			/**< OpenGL GPU data buffer ids. */
+	char groupName[256];		/**< Mesh's group name. */
+	GLuint num_faces;			/**< Number of triangle faces composing this mesh. */
+	GLuint* faces;				/**< List of vertex/normal/tex coord indices for each face. */
+	GLuint texId;				/**< Registered texture id. */
+	GLuint normMapId;			/**< Registered normal map id. */
+	Shader* vertShader;			/**< Vertex shader. */
+	Shader* fragShader;			/**< Fragment shader. */
+	Material mat;				/**< Light interaction properties. */
+	bool normMapped;			/**< True if this mesh has normal map information. */
+	std::vector<Matrix> TBNs;	/**< Tangent, bitangent, normal matrices for normal mapping. */
 
 	/** Default constructor. */
 	Mesh();
@@ -52,7 +56,10 @@ private:
 	static PFNGLBUFFERDATAARBPROC glBufferData;		 /**< Function for sending data to the active buffer. */
 	static PFNGLBUFFERSUBDATAARBPROC glBufferSubData;/**< Function for updating a specififed part of the active buffer. */
 	static PFNGLDELETEBUFFERSARBPROC glDeleteBuffers;/**< Cleanup function for GPU buffers. */
+	static PFNGLACTIVETEXTUREARBPROC glActiveTexture;/**< Function for setting the active texture. */
 	static bool init;								 /**< True once the above functions have been retrieved. */
 	/** Retrieves the processes above. */
 	void initBufferProcs();
+	/** Calculates the TBN matrices for normal mapping. */
+	void calcTBNs();
 };

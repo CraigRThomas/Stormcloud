@@ -61,6 +61,15 @@ void glutStep(){
 	if (InputMgr.keys['q']){
 		exit(0);
 	}
+	if (InputMgr.keys['b']){
+		obj.meshes[0]->fragShader = new Shader(ShaderType::FRAGMENT,"shaders/normmapPS.glsl");
+	}
+	if (InputMgr.keys['n']){
+		obj.meshes[0]->fragShader = new Shader(ShaderType::FRAGMENT,"shaders/normmap2PS.glsl");
+	}
+	if (InputMgr.keys['m']){
+		obj.meshes[0]->fragShader = new Shader(ShaderType::FRAGMENT,"shaders/normmap3PS.glsl");
+	}
 	while (accumulator > dt){ //Runge-Kutta Integration
 		t += dt;
 		accumulator -= dt;
@@ -79,7 +88,7 @@ void redraw(){
 	glLoadIdentity();
 
 	Quaternion q = rotationQuat(yRotation,Vector3f(0,1,0)) * rotationQuat(xRotation,Vector3f(1,0,0));
-	glTranslatef(0,0,-20);
+	glTranslatef(0,0,-2);
 	q.applyRotation();
 
 	obj.draw();
@@ -116,10 +125,10 @@ int main(int argc, char **argv){
 	glEnable(GL_LIGHTING);
 	glEnable(GL_LIGHT0);
 
-	float amb[] = {0.f,0.f,0.f,1.f};
-	float dif[] = {1.0,1.0,1.0,1.f};
+	float amb[] = {1.f,1.f,1.f,1.f};
+	float dif[] = {1.f,1.f,1.f,1.f};
 	float spc[] = {1.f,1.f,1.f,1.f};
-	float pos[] = {0.f,0.f,1.f,1.f};
+	float pos[] = {0.f,0.f,5.f,1.f};
 	glLightfv(GL_LIGHT0,GL_AMBIENT,amb);
 	glLightfv(GL_LIGHT0,GL_DIFFUSE,dif);
 	glLightfv(GL_LIGHT0,GL_SPECULAR,spc);
@@ -135,7 +144,7 @@ int main(int argc, char **argv){
 
 	InputMgr;
 	ShaderMgr;
-	obj.loadFromFile("models/manta.mesh");
+	obj.loadFromFile("models/rock.mesh");
 
 	QueryPerformanceCounter(&tick1); //record the first tick just before we start
 	
