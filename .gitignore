@@ -5,7 +5,6 @@
 *.suo
 *.sdf
 *.opensdf
-trunk/Debug
-trunk/Release
-trunk/Stormcloud/Debug
-trunk/Stormcloud/Release
+Debug
+Release
+gDEBugger
