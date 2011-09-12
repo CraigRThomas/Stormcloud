@@ -52,26 +52,26 @@ bool Object::loadFromFile(char *path){
 		} else if (strstr(line_c,"texpath ")){
 			char buf[256];
 			sscanf(line_c,"%*s %s",buf);
-			temp->texId = ilutGLLoadImage(buf);
+			newMesh->texId = ilutGLLoadImage(buf);
 		} else if (strstr(line_c,"normmappath ")){
 			char buf[256];
 			sscanf(line_c,"%*s %s",buf);
-			temp->normMapId = ilutGLLoadImage(buf);
-			temp->normMapped = true;
-			temp->TBNs.clear();
-			for (unsigned int i=0;i<temp->num_faces;i++){
-				temp->TBNs.push_back(Matrix(3,3));
+			newMesh->normMapId = ilutGLLoadImage(buf);
+			newMesh->normMapped = true;
+			newMesh->TBNs.clear();
+			for (unsigned int i=0;i<newMesh->num_faces;i++){
+				newMesh->TBNs.push_back(Matrix(3,3));
 			}
-			temp->vertShader = ShaderMgr.createShader(ShaderType::VERTEX, "shaders/normal2VS.glsl");
-			temp->fragShader = ShaderMgr.createShader(ShaderType::FRAGMENT, "shaders/normal2PS.glsl");
+			newMesh->vertShader = ShaderMgr.createShader(ShaderType::VERTEX, "shaders/normal2VS.glsl");
+			newMesh->fragShader = ShaderMgr.createShader(ShaderType::FRAGMENT, "shaders/normal2PS.glsl");
 			
-			for (unsigned int i=0;i<temp->vertShader->attribs.size();i++){
-				if (strcmp(temp->vertShader->attribs[i].name,"tangent")==0){
-					temp->vertShader->attribs[i].values = new float[temp->num_faces*3];
-				} else if (strcmp(temp->vertShader->attribs[i].name,"bitangent")==0){
-					temp->vertShader->attribs[i].values = new float[temp->num_faces*3];
-				} else if (strcmp(temp->vertShader->attribs[i].name,"vNormal")==0){
-					temp->vertShader->attribs[i].values = new float[temp->num_faces*3];
+			for (unsigned int i=0;i<newMesh->vertShader->attribs.size();i++){
+				if (strcmp(newMesh->vertShader->attribs[i].name,"tangent")==0){
+					newMesh->vertShader->attribs[i].values = new float[newMesh->num_faces*3];
+				} else if (strcmp(newMesh->vertShader->attribs[i].name,"bitangent")==0){
+					newMesh->vertShader->attribs[i].values = new float[newMesh->num_faces*3];
+				} else if (strcmp(newMesh->vertShader->attribs[i].name,"vNormal")==0){
+					newMesh->vertShader->attribs[i].values = new float[newMesh->num_faces*3];
 				} 
 			}
 

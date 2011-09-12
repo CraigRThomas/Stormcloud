@@ -91,11 +91,13 @@ void Shader::load(char* filepath){
 	bool mat = false;
 	while(f.good()){
 		getline(f,str);
+		str_c = new char[str.length()];
 		str_c = strdup(str.c_str());
 		if (strstr(str_c,"uniform ") || strstr(str_c,"attribute ")){
+			str = str.substr(0,str.length()-2);
+			str_c = strdup(str.c_str());
 			a.size = 0;
 			c.size = 0;
-			str = str.substr(0,(int)strcspn(str_c,";"));
 			if (strchr(str_c,'[')!=0){
 				arraySize = str.substr(str.find("[")+1,str.find("]")-str.find("[")-1);
 				str = str.substr(0, str.find("["));
