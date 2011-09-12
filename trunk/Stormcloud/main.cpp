@@ -76,6 +76,7 @@ void redraw(){
 
 	Quaternion q = rotationQuat(yRotation,Vector3f(0,1,0)) * rotationQuat(xRotation,Vector3f(1,0,0));
 	glTranslatef(0,0,-20);
+	//std::cout<<yRotation<<" "<<xRotation<<std::endl;
 	q.applyRotation();
 
 	obj.draw();

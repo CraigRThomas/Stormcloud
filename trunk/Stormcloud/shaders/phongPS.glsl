@@ -1,5 +1,5 @@
-in vec3 normal, lightDir, eyeVec;
-in vec2 texCoord;
+varying vec3 normal, lightDir, eyeVec;
+varying vec2 texCoord;
 
 uniform sampler2D image;
 

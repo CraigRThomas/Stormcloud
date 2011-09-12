@@ -1,5 +1,5 @@
-out vec3 normal, lightDir, eyeVec;
-out vec2 texCoord;
+varying vec3 normal, lightDir, eyeVec;
+varying vec2 texCoord;
 
 void main() {
 	texCoord = gl_MultiTexCoord0.xy;

@@ -31,8 +31,9 @@ bool Object::loadFromFile(char *path){
 
 	while(f.good()){
 		getline(f,line);
-		line_c = strdup(line.c_str());
 		if (line.length() == 0) break;
+		line_c = new char[line.length()];
+		line_c = strdup(line.c_str());
 		if (strstr(line_c,"begin ")){
 			newMesh = new Mesh();
 			sscanf(line_c,"%*s %s",newMesh->groupName);
