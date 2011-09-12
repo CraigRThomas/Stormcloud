@@ -4,6 +4,7 @@
 *.filters
 *.suo
 *.sdf
+*.opensdf
 trunk/Debug
 trunk/Release
 trunk/Stormcloud/Debug
