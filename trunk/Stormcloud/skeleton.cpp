@@ -17,17 +17,22 @@ void Skeleton::load(char *filePath, char* meshName){
 	strcat(path, ".joints");
 	std::ifstream f(path, std::ios_base::in|std::ios_base::binary);
 	std::string line;
+	char* line_c;
 	numJoints = 0;
 	rotation = 0;
 
 	while(f.good()){
 		getline(f,line);
+		line_c = new char[line.length()];
+		line_c = strdup(line.c_str());
 		char* c = new char[256];
 		strcpy(c, "begin ");
 		c = strcat(c,meshName);
-		if (strncmp(line.c_str(),c,line.length())==0 && line.length() > 0){
+		if (strncmp(line_c,c,line.length())==0 && line.length() > 0){
 			getline(f,line);
-			sscanf(line.c_str(),"%s %f %f %f",root.name, &root.pos.x, &root.pos.y, &root.pos.z);
+			line_c = new char[line.length()];
+			line_c = strdup(line.c_str());
+			sscanf(line_c,"%s %f %f %f",root.name, &root.pos.x, &root.pos.y, &root.pos.z);
 			root.index = 0;
 			root.parent = 0;
 
@@ -36,12 +41,14 @@ void Skeleton::load(char *filePath, char* meshName){
 			numJoints = 1;
 			while(f.good()){
 				getline(f,line);
-				if (strstr(line.c_str(),"end")) break;
+				if (strstr(line_c,"end")) break;
 				if (line.length()>0){
-					if (strstr(line.c_str(),"}")){
+					line_c = new char[line.length()];
+					line_c = strdup(line.c_str());
+					if (strstr(line_c,"}")){
 						cur = cur->parent;
 					} else {
-						sscanf(line.c_str(),"%s %f %f %f",j.name,&j.pos.x,&j.pos.y,&j.pos.z);
+						sscanf(line_c,"%s %f %f %f",j.name,&j.pos.x,&j.pos.y,&j.pos.z);
 						j.parent = cur;
 						j.index = numJoints;
 						j.rotation = Quaternion(1,0,0,0);
@@ -62,11 +69,11 @@ void Skeleton::load(char *filePath, char* meshName){
 	std::ifstream wf(path,std::ios_base::in|std::ios_base::binary);
 
 	char* buf = new char[128];
-	char* lineCopy = new char[512];
 	int count = 0;
 	getline(wf,line);
-	strcpy(lineCopy,line.c_str());
-	buf = strtok(lineCopy,":");
+	line_c = new char[line.length()];
+	line_c = strdup(line.c_str());
+	buf = strtok(line_c,":");
 	while(buf){
 		count++;
 		buf = strtok(NULL,":");
@@ -74,10 +81,11 @@ void Skeleton::load(char *filePath, char* meshName){
 	
 	while(wf.good()){
 		getline(wf,line);
-		if (strstr(line.c_str(),":")){
+		line_c = new char[line.length()];
+		line_c = strdup(line.c_str());
+		if (strstr(line_c,":")){
 			weights.push_back(new float[count]);
-			strcpy(lineCopy,line.c_str());
-			buf = strtok(lineCopy,":");
+			buf = strtok(line_c,":");
 			buf = strtok(NULL,":");
 			for (int i=0;i<count;i++){
 				sscanf(buf,"%f",&weights.back()[i]);

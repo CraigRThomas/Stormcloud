@@ -1,7 +1,3 @@
-#pragma comment(lib,"inc/DevIL.lib")
-#pragma comment(lib,"inc/ILUT.lib")
-#pragma comment(lib,"inc/fmodex_vc.lib")
-
 #include <iostream>
 #include <windows.h>
 #include <stdlib.h>
@@ -88,7 +84,8 @@ void redraw(){
 	glLoadIdentity();
 
 	Quaternion q = rotationQuat(yRotation,Vector3f(0,1,0)) * rotationQuat(xRotation,Vector3f(1,0,0));
-	glTranslatef(0,0,-2);
+	glTranslatef(0,0,-20);
+	//std::cout<<yRotation<<" "<<xRotation<<std::endl;
 	q.applyRotation();
 
 	obj.draw();

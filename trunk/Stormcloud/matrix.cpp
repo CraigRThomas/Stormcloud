@@ -37,8 +37,8 @@ Matrix::Matrix(int _rows, int _cols, bool _ident){
 	}
 }
 
-Matrix::~Matrix(){ 
-
+Matrix::~Matrix(){
+	data.clear();
 }
 
 const Matrix& Matrix::operator=(const Matrix& m){

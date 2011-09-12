@@ -92,6 +92,7 @@ void ShaderManager::updateCurrentShaderProc(void){
 	std::vector<ShaderProc*>::iterator i;
 	for (i=shaderPrograms.begin(); i!=shaderPrograms.end(); i++){
 		if((*i)->vtShader == curShaders[0] && (*i)->pxShader == curShaders[1] && (*i)->geoShader == curShaders[2]){
+			if(!(*i)->compileCode){return;}
 			Shader::glUseProgramObjectARB((*i)->proc);
 			if ((*i)->vtShader){
 				if (!vtShaders.empty()){
@@ -110,7 +111,7 @@ void ShaderManager::updateCurrentShaderProc(void){
 	}
 
 	ShaderProc* newShaderProc = new ShaderProc();
-	
+		
 	newShaderProc->proc = Shader::glCreateProgramObjectARB();
 
 	newShaderProc->pxShader = (pxShaders.empty())?0:pxShaders.top()->shaderID();
@@ -123,11 +124,11 @@ void ShaderManager::updateCurrentShaderProc(void){
 	//std::cout << "Creating Shader: " << newShaderProc->proc << " (" << newShaderProc->pxShader << " " << newShaderProc->vtShader << " " << newShaderProc->geoShader << ")" << std::endl;
 	
 	Shader::glLinkProgramARB(newShaderProc->proc);
+	shaderPrograms.push_back(newShaderProc);
+
+	Shader::glGetObjectParameterivARB(newShaderProc->proc, GL_OBJECT_LINK_STATUS_ARB, &newShaderProc->compileCode);
 	
-	int result = 0;
-	Shader::glGetObjectParameterivARB(newShaderProc->proc, GL_OBJECT_LINK_STATUS_ARB, &result);
-	
-	if(!result){
+	if(!newShaderProc->compileCode){
 		int infoLogSize;
 		Shader::glGetObjectParameterivARB(newShaderProc->proc, GL_OBJECT_INFO_LOG_LENGTH_ARB,&infoLogSize);
 		GLcharARB* infoLog = new GLcharARB[infoLogSize];
@@ -135,8 +136,8 @@ void ShaderManager::updateCurrentShaderProc(void){
 		fprintf(stderr, "Error in program linkage!\n");
 		fprintf(stderr, "Info log: %s\n", infoLog);
 		Shader::glDeleteObjectARB(newShaderProc->proc);
+		newShaderProc->proc = 0;
 	} else {
-		shaderPrograms.push_back(newShaderProc);
 		Shader::glUseProgramObjectARB(newShaderProc->proc);
 		if (newShaderProc->vtShader){
 			if (!vtShaders.empty()){
