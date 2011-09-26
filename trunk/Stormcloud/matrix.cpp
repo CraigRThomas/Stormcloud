@@ -203,7 +203,7 @@ void Matrix::print(){
 void Matrix::populate(float f[]){
 	for (unsigned i=0;i<rows;i++){
 		for (unsigned j=0;j<cols;j++){
-			data[i][j] = f[(i*cols)+j];
+			data[j][i] = f[(i*cols)+j];
 		}
 	}
 }
@@ -211,7 +211,7 @@ void Matrix::populate(float f[]){
 void Matrix::populate(const float f[]){
 	for (unsigned i=0;i<rows;i++){
 		for (unsigned j=0;j<cols;j++){
-			data[i][j] = f[(i*cols)+j];
+			data[j][i] = f[(i*cols)+j];
 		}
 	}
 }
@@ -225,21 +225,21 @@ void Matrix::populate(Quaternion &rotation, Vector3f &translation){
 	data[0][0] = 1.f - 2.f * (y*y + z*z);
 	data[0][1] = 2.f * (x*y + z*w);
 	data[0][2] = 2.f * (x*z - y*w);
-	data[0][3] = translation.x;
+	data[0][3] = 0.f;
 
 	data[1][0] = 2.f * (x*y - z*w);
 	data[1][1] = 1.f - 2.f * (x*x + z*z);
 	data[1][2] = 2.f * (z*y + x*w);
-	data[1][3] = translation.y;
+	data[1][3] = 0.f;
 
 	data[2][0] = 2.f * (x*z + y*w);
 	data[2][1] = 2.f * (y*z - x*w);
 	data[2][2] = 1.f - 2.f * (x*x + y*y);
-	data[2][3] = translation.z;
+	data[2][3] = 0.f;
 
-	data[3][0] = 0.f;
-	data[3][1] = 0.f;
-	data[3][2] = 0.f;
+	data[3][0] = translation.x;
+	data[3][1] = translation.y;
+	data[3][2] = translation.z;
 	data[3][3] = 1.f;
 }
 
@@ -269,7 +269,7 @@ void Matrix::homogeneous3D(const float &xRot, const float &yRot, const float &zR
 		}
 	}
 
-	/*data[0][0] = cz*cy - sz*sx*sy;
+	data[0][0] = cz*cy - sz*sx*sy;
 	data[0][1] = -sz*cx;
 	data[0][2] = cz*sy + sz*sx*cy;
 	
@@ -277,11 +277,11 @@ void Matrix::homogeneous3D(const float &xRot, const float &yRot, const float &zR
 	data[1][1] = cz*cx;
 	data[1][2] = sz*sy - cz*sx*cy;
 
-	data[2][0] = -sx*sy;
+	data[2][0] = -cx*sy;
 	data[2][1] = sx;
-	data[2][2] = cx*cy;*/
+	data[2][2] = cx*cy;
 
-	data[0][0] = cz*cy;
+	/*data[0][0] = cz*cy;
 	data[0][1] = -sz*cy + sx*sy*cz;
 	data[0][2] = sx*sz + cx*sy*cz;
 	
@@ -291,7 +291,7 @@ void Matrix::homogeneous3D(const float &xRot, const float &yRot, const float &zR
 
 	data[2][0] = -sy;
 	data[2][1] = sx*cy;
-	data[2][2] = cx*cy;
+	data[2][2] = cx*cy;*/
 
 	data[0][3] = translation.x;
 	data[1][3] = translation.y;

@@ -17,7 +17,9 @@ const float deltaTime = 10.0f, timeScale = 1.0;
 bool isPaused = false;
 float yRotation = 0;
 float xRotation = 0;
+Vector3f translation(0,0,-20);
 Object obj;
+Matrix projectionMat(4,4);
 
 void mouseWrap(int b, int s, int x, int y);
 void mouseMoveWrap(int x, int y);
@@ -57,15 +59,6 @@ void glutStep(){
 	if (InputMgr.keys['q']){
 		exit(0);
 	}
-	if (InputMgr.keys['b']){
-		obj.meshes[0]->fragShader = new Shader(ShaderType::FRAGMENT,"shaders/normmapPS.glsl");
-	}
-	if (InputMgr.keys['n']){
-		obj.meshes[0]->fragShader = new Shader(ShaderType::FRAGMENT,"shaders/normmap2PS.glsl");
-	}
-	if (InputMgr.keys['m']){
-		obj.meshes[0]->fragShader = new Shader(ShaderType::FRAGMENT,"shaders/normmap3PS.glsl");
-	}
 	while (accumulator > dt){ //Runge-Kutta Integration
 		t += dt;
 		accumulator -= dt;
@@ -79,16 +72,22 @@ void glutStep(){
 
 void redraw(){
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	
+	Quaternion q = rotationQuat(yRotation,Vector3f(0,1,0)) * rotationQuat(xRotation,Vector3f(1,0,0));
+
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
-
-	Quaternion q = rotationQuat(yRotation,Vector3f(0,1,0)) * rotationQuat(xRotation,Vector3f(1,0,0));
-	glTranslatef(0,0,-2);
-	//std::cout<<yRotation<<" "<<xRotation<<std::endl;
+	glTranslatef(0,0,-20);
 	q.applyRotation();
 
-	obj.draw();
+	Matrix t(4,4);
+	/*float data[16];
+	glGetFloatv(GL_MODELVIEW_MATRIX,data);
+	t.populate(data);
+	t = projectionMat * t;*/
+	t.homogeneous3D(xRotation,yRotation,0,translation);
+	t = projectionMat ;//* t;
+
+	obj.draw(t);
 
 	glutSwapBuffers();
 }
@@ -99,7 +98,7 @@ int main(int argc, char **argv){
 	glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE);
 	glutInitWindowPosition(200, 200);
 	glutInitWindowSize(800, 600);
-	glutCreateWindow("Stormcloud");
+	glutCreateWindow("Lavaflow");
 	glClearColor(0,0,0,1.0f);
 
 	glutDisplayFunc(glutStep);
@@ -122,26 +121,11 @@ int main(int argc, char **argv){
 	glEnable(GL_LIGHTING);
 	glEnable(GL_LIGHT0);
 
-	float amb[] = {1.f,1.f,1.f,1.f};
-	float dif[] = {1.f,1.f,1.f,1.f};
-	float spc[] = {1.f,1.f,1.f,1.f};
-	float pos[] = {0.f,0.f,5.f,1.f};
-	glLightfv(GL_LIGHT0,GL_AMBIENT,amb);
-	glLightfv(GL_LIGHT0,GL_DIFFUSE,dif);
-	glLightfv(GL_LIGHT0,GL_SPECULAR,spc);
-	glLightfv(GL_LIGHT0,GL_POSITION,pos);
-
-	float As[4] = {0.1,0.1,0.1, 1.0f };
-	glLightModelfv( GL_LIGHT_MODEL_AMBIENT, As );
-
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	
-	ilInit();
-	ilutInit();
 
 	InputMgr;
 	ShaderMgr;
-	obj.loadFromFile("models/rock.mesh");
+	obj.loadFromFile("models/manta.mesh");
 
 	QueryPerformanceCounter(&tick1); //record the first tick just before we start
 	
@@ -150,25 +134,36 @@ int main(int argc, char **argv){
 }
 
 void windowResizeHandler(int w, int h){
-	int vw = 0, vh = 0, vx = 0, vy = 0;
-	glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
 
-	if(w*3<h*4){
-		vw = w;
-		vh = w*(3.f/4.f);
-		vy = h/2.f-vh/2;
-		glViewport(0, vy, w, vh);
-	} else {
-		vw = h*(4.f/3.f);
-		vh = h;
-		vx = w/2.f-vw/2.f;
-		glViewport(vx, 0, vw, h);
-	}
+	float aspect = 4.f/3.f;
+	float zFar = 1000.f;
+	float zNear = 1.f;
+	float fovy = 60.f;
 
-	glScissor(vx,vy,vw,vh);
+	float top = tan(fovy / 360.f * 3.1415) * zNear; 
+	float bottom = -top;
+	float right = top * aspect;
+	float left = -right;
 
-	gluPerspective(60, 4.f/3.f, 1.0, 1000.0);
+	projectionMat.populate(0,0,zNear/(right));
+	projectionMat.populate(0,1,0);
+	projectionMat.populate(0,2,0);
+	projectionMat.populate(0,3,0);
+
+	projectionMat.populate(1,0,0);
+	projectionMat.populate(1,1,zNear/(top));
+	projectionMat.populate(1,2,0);
+	projectionMat.populate(1,3,0);
+
+	projectionMat.populate(2,0,0);
+	projectionMat.populate(2,1,0);
+	projectionMat.populate(2,2,-(zFar+zNear)/(zFar-zNear)); 
+	projectionMat.populate(2,3,-(2*zFar*zNear)/(zFar-zNear));
+
+	projectionMat.populate(3,0,0);
+	projectionMat.populate(3,1,0);
+	projectionMat.populate(3,2,-1);
+	projectionMat.populate(3,3,0);
 	
 	glutPostRedisplay();
 	glutStep();

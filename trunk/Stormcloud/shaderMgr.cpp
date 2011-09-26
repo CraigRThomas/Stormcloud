@@ -8,7 +8,7 @@ ShaderManager::~ShaderManager(void){
 	delete singleton;
 }
 
-Shader* ShaderManager::createShader(ShaderType type, char* filepath, unsigned int priority){
+Shader* ShaderManager::createShader(ShaderType type, char* filepath, unsigned int attributeArraySize, unsigned int priority){
 	//std::cout<<filepath<<"\n";
 	std::vector<Shader*>::iterator i;
 	for (i=shaders.begin(); i!=shaders.end(); i++){
@@ -16,7 +16,7 @@ Shader* ShaderManager::createShader(ShaderType type, char* filepath, unsigned in
 			return (*i);
 		}
 	}
-	Shader* temp = new Shader(type, filepath, priority);
+	Shader* temp = new Shader(type, filepath, attributeArraySize, priority);
 	shaders.push_back(temp);
 	//std::cout<<shaders.size()<<"\n";
 	return temp;
