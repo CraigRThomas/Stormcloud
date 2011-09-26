@@ -1,7 +1,5 @@
 #pragma once
 
-#define hard_mesh 0
-
 #include <vector>
 #include <cstdio>
 #include <iostream>
