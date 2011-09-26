@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<gDEBugger>
+    <Breakpoints>
+        <BreakOnOpenGLError>false</BreakOnOpenGLError>
+        <BreakOnDetectedError>false</BreakOnDetectedError>
+        <BreakOnRedundantStateChanges>false</BreakOnRedundantStateChanges>
+        <BreakOnGraphicMemoryLeaks>false</BreakOnGraphicMemoryLeaks>
+        <FunctionBreakpoint />
+    </Breakpoints>
+    <OpenGLStateVariables />
+</gDEBugger>
