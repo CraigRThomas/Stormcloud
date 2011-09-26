@@ -34,15 +34,16 @@ public:
 	std::vector<UniformFloat> floats;	/**< Collection of uniform floats to be sent to the GPU. */
 	std::vector<UniformInt> ints;		/**< Collection of uniform ints to be sent to the GPU. */
 	std::vector<UniformFloat> attribs;	/**< Collection of attributes to be sent to the GPU. */
+	std::vector<UniformFloat> OGLfloats;/**< Collection of uniform floats specified by OGL. */
 
 	/** Default constructor. */
 	Shader(void);
 	/** Constructor to load from file. */
-	Shader(ShaderType type, char* filepath, unsigned int priority = 0);
+	Shader(ShaderType type, char* filepath, unsigned int attributeArraySize = 1, unsigned int priority = 0);
 	/** Destructor. */
 	~Shader(void);
 	/** Loads a shader from the specified .glsl file. */
-	void load(char* filepath);
+	void load(char* filepath, unsigned int attributeArraySize = 1);
 	/** Returns the filepath for this shader. */
 	char* filepath(void);
 	/** Returns the id for this shader. */
@@ -61,8 +62,10 @@ public:
 	void send(char* name, int value);
 	/** Send an array of ints to the GPU. */
 	void send(char* name, int value[]);
-	/** Sends a matrix to the GPU. */
-	void sendMatrix(char* name, float value[]);
+	/** Sends an array of OpenGL-specified uniform floats to the GPU. */
+	void sendOGLUniformf(char *name, float value[]);
+	/** Registers an OpenGL declared uniform to be tracked by this shader. */
+	void regOGLUniformf(char* name, unsigned int _size, unsigned int _array_size);
 	/** Takes care of actually sending the data to the GPU. */
 	void updateVars(void);
 	/** Gets the location of each uniform variable from the current shader program. */
@@ -108,6 +111,7 @@ public:
 	static PFNGLVERTEXATTRIBPOINTERPROC		 glVertexAttribPointer;		/**< Sets the location the specified vertex attribute gets its data from. */
 	static PFNGLBINDBUFFERARBPROC			 glBindBuffer;				/**< Sets the active buffer. */
 	static PFNGLENABLEVERTEXATTRIBARRAYPROC  glEnableVertexAttribArray; /**< Enables an array of data for the specified vertex attribute. */
+	static PFNGLBINDATTRIBLOCATIONARBPROC	 glBindAttribLocation;
 
 private:
 	ShaderType _type;			/**< Type of shader (vertex, geometry, pixel). */

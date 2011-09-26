@@ -38,6 +38,7 @@ PFNGLGETATTRIBLOCATIONARBPROC	  Shader::glGetAttribLocationARB	= NULL;
 PFNGLVERTEXATTRIBPOINTERPROC	  Shader::glVertexAttribPointer		= NULL;
 PFNGLBINDBUFFERARBPROC			  Shader::glBindBuffer				= NULL;
 PFNGLENABLEVERTEXATTRIBARRAYPROC  Shader::glEnableVertexAttribArray = NULL;
+PFNGLBINDATTRIBLOCATIONARBPROC	  Shader::glBindAttribLocation		= NULL;
 
 bool Shader::init = false;
 
@@ -50,20 +51,20 @@ Shader::Shader(void){
 	_compileCode = 0;
 }
 
-Shader::Shader(ShaderType type, char* filepath, unsigned int priority){
+Shader::Shader(ShaderType type, char* filepath, unsigned int attributeArraySize, unsigned int priority){
 	if(!Shader::init){
 		Shader::initShaderProcs();
 		init = true;
 	}
 	_type = type;
 	_priority = priority;
-	load(filepath);
+	load(filepath, attributeArraySize);
 }
 
 Shader::~Shader(void){
 }
-
-void Shader::load(char* filepath){
+#include <sstream>
+void Shader::load(char* filepath, unsigned int attributeArraySize){
 	strcpy_s(_filepath,sizeof(_filepath),filepath);
 
 	std::ifstream f(_filepath, std::ios_base::in|std::ios_base::binary);
@@ -101,6 +102,10 @@ void Shader::load(char* filepath){
 			if (strchr(str_c,'[')!=0){
 				arraySize = str.substr(str.find("[")+1,str.find("]")-str.find("[")-1);
 				str = str.substr(0, str.find("["));
+			} else if (strstr(str_c,"attribute")!=0){
+				std::stringstream out;
+				out << attributeArraySize;
+				arraySize = out.str();
 			} else {
 				arraySize = "1";
 			}
@@ -163,11 +168,7 @@ void Shader::load(char* filepath){
 				ints.push_back(c);
 			}
 
-			if (strcmp(type,"mat2")==0){
-				a.size = 2;
-			} else if (strcmp(type,"mat3")==0){
-				a.size = 3;
-			}
+			mat = false;
 		}
 
 	}
@@ -231,6 +232,7 @@ void Shader::initShaderProcs(void){
 	glVertexAttribPointer = (PFNGLVERTEXATTRIBPOINTERPROC)wglGetProcAddress("glVertexAttribPointer");
 	glBindBuffer = (PFNGLBINDBUFFERARBPROC)wglGetProcAddress("glBindBuffer");
 	glEnableVertexAttribArray = (PFNGLENABLEVERTEXATTRIBARRAYPROC)wglGetProcAddress("glEnableVertexAttribArray");
+	glBindAttribLocation = (PFNGLBINDATTRIBLOCATIONARBPROC)wglGetProcAddress("glBindAttribLocationARB");
 }
 
 char* Shader::filepath(void){
@@ -264,6 +266,12 @@ float* Shader::getFloat(char* name){
 			return attribs[i].values;
 		}
 	}
+	for (unsigned int i=0;i<OGLfloats.size();i++){
+		if (strcmp(name,OGLfloats[i].name)==0){
+			return OGLfloats[i].values;
+		}
+	}
+	return 0;
 }
 
 void Shader::send(char *name, float value){
@@ -311,6 +319,27 @@ void Shader::send(char *name, int value[]){
 	}
 }
 
+void Shader::sendOGLUniformf(char *name, float value[]){
+	for (unsigned int i=0;i<OGLfloats.size();i++){
+		if (strcmp(name,OGLfloats[i].name)==0){
+			for (unsigned int j=0;j<OGLfloats[i].size;j++){
+				OGLfloats[i].values[j] = value[j];
+			}
+		}
+	}
+}
+
+void Shader::regOGLUniformf(char *name, unsigned int _size, unsigned int _array_size){
+	UniformFloat f;
+	f.loc = 0;
+	f.size = _size;
+	f.arraySize = _array_size;
+	strcpy(f.name, name);
+	f.values = new float[f.size * f.arraySize];
+	f.mat = false;
+	OGLfloats.push_back(f);
+}
+
 void Shader::updateVars(void){
 	for (unsigned int i=0;i<floats.size();i++){
 		if (floats[i].values[0] >= 0){
@@ -344,11 +373,11 @@ void Shader::updateVars(void){
 			} else {
 				switch(floats[i].size){
 					case 2:
-						glUniformMatrix2fvARB(floats[i].loc, floats[i].size*floats[i].arraySize, false, floats[i].values); break;
+						glUniformMatrix2fvARB(floats[i].loc, 1, false, floats[i].values); break;
 					case 3:
-						glUniformMatrix3fvARB(floats[i].loc, floats[i].size*floats[i].arraySize, false, floats[i].values); break;
+						glUniformMatrix3fvARB(floats[i].loc, 1, false, floats[i].values); break;
 					case 4:
-						glUniformMatrix4fvARB(floats[i].loc, floats[i].size*floats[i].arraySize, false, floats[i].values); break;
+						glUniformMatrix4fvARB(floats[i].loc, 1, false, floats[i].values); break;
 				}
 			}
 		}
@@ -386,12 +415,12 @@ void Shader::updateVars(void){
 	for (unsigned int i=0;i<attribs.size();i++){
 		glBindBuffer(GL_ARRAY_BUFFER,0);
 		glEnableVertexAttribArray(attribs[i].loc);
-		/*if (strcmp(attribs[i].name,"vNormal")==0){
+		/*if (strcmp(attribs[i].name,"vTexCoord")==0){
 			for (unsigned int j=0;j<12;j++){
-				std::cout<<attribs[i].values[j*3]<<" "<<attribs[i].values[j*3+1]<<" "<<attribs[i].values[j*3+2]<<"\n";
+				std::cout<<attribs[i].values[j*2]<<" "<<attribs[i].values[j*2+1]<<"\n";
 			}
 		}*/
-		glVertexAttribPointer(attribs[i].loc, 3, GL_FLOAT, GL_TRUE, 0, attribs[i].values);
+		glVertexAttribPointer(attribs[i].loc, attribs[i].size, GL_FLOAT, GL_TRUE, 0, attribs[i].values);
 	}
 			
 }
@@ -407,5 +436,8 @@ void Shader::getLocations(unsigned int proc_id){
 	}
 	for (unsigned int i=0;i<attribs.size();i++){
 		attribs[i].loc = glGetAttribLocationARB(proc_id, attribs[i].name);
+	}
+	for (unsigned int i=0;i<OGLfloats.size();i++){
+		OGLfloats[i].loc = glGetUniformLocationARB(proc_id, OGLfloats[i].name);
 	}
 }

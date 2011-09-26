@@ -15,14 +15,16 @@ void Object::update(const float &dt){
 	}
 }
 
-void Object::draw(){
+void Object::draw(Matrix &t){
 	std::vector<Mesh*>::iterator i = meshes.begin();
 	for (i;i<meshes.end();i++){
-		(*i)->draw();
+		(*i)->draw(t);
 	}
 }
 
 bool Object::loadFromFile(char *path){
+	ilInit();
+	ilutInit();
 	std::ifstream f(path, std::ios_base::in|std::ios_base::binary);
 	std::string line;
 	char* line_c;
@@ -43,7 +45,7 @@ bool Object::loadFromFile(char *path){
 		} else if (strstr(line_c,"end ")){
 			newMesh->allocateBuffers();
 			if (!newMesh->vertShader){
-				newMesh->vertShader = ShaderMgr.createShader(ShaderType::VERTEX, "shaders/phongVS.glsl");
+				newMesh->vertShader = ShaderMgr.createShader(ShaderType::VERTEX, "shaders/phongVS.glsl", newMesh->num_verts);
 			}
 			if (!newMesh->fragShader){
 				newMesh->fragShader = ShaderMgr.createShader(ShaderType::FRAGMENT, "shaders/phongPS.glsl");
@@ -152,6 +154,10 @@ bool Object::loadFromFile(char *path){
 	delete [] line_c;
 	line_c = NULL;
 	newMesh = NULL;
+
+	ilShutDown();
+
+	
 
 	return true;
 }

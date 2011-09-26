@@ -1,11 +1,21 @@
+uniform mat4 transform;
+uniform vec4 matAmbient;
+uniform vec4 matDiffuse;
+uniform vec4 matSpecular;
+uniform float matShininess;
+
+attribute vec3 vPosition;
+attribute vec3 vNormal;
+attribute vec2 vTexCoord;
 attribute vec3 tangent;
 attribute vec3 bitangent;
-attribute vec3 vNormal;
+attribute vec3 tanSpcNormal;
+
 varying vec3 lightVec, eyeVec;
 varying vec2 texCoord;
 
 void main() {
-	gl_Position = ftransform();
+	gl_Position = transform * vPosition;
 	texCoord = gl_MultiTexCoord0.xy;
 	
 	vec3 n = normalize(vNormal);

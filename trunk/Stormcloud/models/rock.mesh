@@ -48,5 +48,4 @@ mat kd 0.5 0.5 0.5
 mat ks 0.8 0.8 0.8
 mat ns 0
 texpath textures/rock.bmp
-normmappath textures/rockNormal.bmp
 end pCube1

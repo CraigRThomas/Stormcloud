@@ -11,8 +11,8 @@
 #include "matrix.h"
 
 enum {
-	DATA_BUFFER = 0,
-	INDICES_BUFFER = 1
+	VBO = 0,
+	IBO = 1
 };
 
 struct Material {
@@ -39,6 +39,7 @@ public:
 	Material mat;				/**< Light interaction properties. */
 	bool normMapped;			/**< True if this mesh has normal map information. */
 	std::vector<Matrix> TBNs;	/**< Tangent, bitangent, normal matrices for normal mapping. */
+	Matrix transform;			/**< Homogenous transformation matrix. */
 
 	/** Default constructor. */
 	Mesh();
@@ -47,7 +48,7 @@ public:
 	/** Step function. */
 	void update(const GLfloat& dt);
 	/** Draw function. */
-	void draw();
+	void draw(Matrix &t);
 	/** Allocates GPU buffers for sending data. Pre: num_verts must be set. */
 	void allocateBuffers();
 private:
@@ -57,6 +58,8 @@ private:
 	static PFNGLBUFFERSUBDATAARBPROC glBufferSubData;/**< Function for updating a specififed part of the active buffer. */
 	static PFNGLDELETEBUFFERSARBPROC glDeleteBuffers;/**< Cleanup function for GPU buffers. */
 	static PFNGLACTIVETEXTUREARBPROC glActiveTexture;/**< Function for setting the active texture. */
+	static PFNGLVERTEXATTRIBPOINTERARBPROC glVertexAttribPointer;
+	static PFNGLENABLEVERTEXATTRIBARRAYARBPROC glEnableVertexAttribArray;
 	static bool init;								 /**< True once the above functions have been retrieved. */
 	/** Retrieves the processes above. */
 	void initBufferProcs();
