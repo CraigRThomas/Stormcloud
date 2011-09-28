@@ -154,6 +154,7 @@ exit /b 0</Command>
     <ClCompile Include="main.cpp" />
     <ClCompile Include="matrix.cpp" />
     <ClCompile Include="mesh.cpp" />
+    <ClCompile Include="Node.cpp" />
     <ClCompile Include="object.cpp" />
     <ClCompile Include="quaternion.cpp" />
     <ClCompile Include="shader.cpp" />
@@ -165,6 +166,7 @@ exit /b 0</Command>
     <ClInclude Include="inputMgr.h" />
     <ClInclude Include="matrix.h" />
     <ClInclude Include="mesh.h" />
+    <ClInclude Include="Node.h" />
     <ClInclude Include="object.h" />
     <ClInclude Include="quaternion.h" />
     <ClInclude Include="shader.h" />

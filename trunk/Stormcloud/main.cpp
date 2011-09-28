@@ -76,7 +76,9 @@ void redraw(){
 
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
-	glTranslatef(0,0,-20);
+
+	glTranslatef(0,0,-15);
+	//std::cout<<yRotation<<" "<<xRotation<<std::endl;
 	q.applyRotation();
 
 	Matrix t(4,4);
