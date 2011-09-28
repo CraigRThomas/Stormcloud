@@ -19,7 +19,7 @@ public:
 	/** Singleton constructor. */
 	static ShaderManager& SHMgr();
 	/** Create new shader */
-	Shader* createShader(ShaderType type, char* filepath, unsigned int attributeArraySize = 1, unsigned int priority = 0);
+	Shader* createShader(ShaderType type, char* filepath, unsigned int priority = 0);
 	/** Pop the top shader from the specified stack */
 	void pop(ShaderType type = ShaderType::ALL);
 	/** Push a shader onto the top of the appropreate stack */

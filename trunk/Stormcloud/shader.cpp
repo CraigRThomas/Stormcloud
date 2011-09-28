@@ -3,6 +3,8 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <sstream>
+
 PFNGLCREATEPROGRAMOBJECTARBPROC   Shader::glCreateProgramObjectARB  = NULL;
 PFNGLCREATESHADEROBJECTARBPROC    Shader::glCreateShaderObjectARB   = NULL;
 PFNGLLINKPROGRAMARBPROC           Shader::glLinkProgramARB          = NULL;
@@ -51,20 +53,20 @@ Shader::Shader(void){
 	_compileCode = 0;
 }
 
-Shader::Shader(ShaderType type, char* filepath, unsigned int attributeArraySize, unsigned int priority){
+Shader::Shader(ShaderType type, char* filepath, unsigned int priority){
 	if(!Shader::init){
 		Shader::initShaderProcs();
 		init = true;
 	}
 	_type = type;
 	_priority = priority;
-	load(filepath, attributeArraySize);
+	load(filepath);
 }
 
 Shader::~Shader(void){
 }
-#include <sstream>
-void Shader::load(char* filepath, unsigned int attributeArraySize){
+
+void Shader::load(char* filepath){
 	strcpy_s(_filepath,sizeof(_filepath),filepath);
 
 	std::ifstream f(_filepath, std::ios_base::in|std::ios_base::binary);
@@ -102,10 +104,6 @@ void Shader::load(char* filepath, unsigned int attributeArraySize){
 			if (strchr(str_c,'[')!=0){
 				arraySize = str.substr(str.find("[")+1,str.find("]")-str.find("[")-1);
 				str = str.substr(0, str.find("["));
-			} else if (strstr(str_c,"attribute")!=0){
-				std::stringstream out;
-				out << attributeArraySize;
-				arraySize = out.str();
 			} else {
 				arraySize = "1";
 			}
@@ -412,17 +410,12 @@ void Shader::updateVars(void){
 			}
 		}
 	}
+	
 	for (unsigned int i=0;i<attribs.size();i++){
 		glBindBuffer(GL_ARRAY_BUFFER,0);
 		glEnableVertexAttribArray(attribs[i].loc);
-		/*if (strcmp(attribs[i].name,"vTexCoord")==0){
-			for (unsigned int j=0;j<12;j++){
-				std::cout<<attribs[i].values[j*2]<<" "<<attribs[i].values[j*2+1]<<"\n";
-			}
-		}*/
 		glVertexAttribPointer(attribs[i].loc, attribs[i].size, GL_FLOAT, GL_TRUE, 0, attribs[i].values);
-	}
-			
+	}	
 }
 
 void Shader::getLocations(unsigned int proc_id){
@@ -440,4 +433,12 @@ void Shader::getLocations(unsigned int proc_id){
 	for (unsigned int i=0;i<OGLfloats.size();i++){
 		OGLfloats[i].loc = glGetUniformLocationARB(proc_id, OGLfloats[i].name);
 	}
+}
+
+void Shader::setAttributeArraySize(unsigned int attributeArraySize, unsigned int attribbuffer_index){
+	for (unsigned int i=0;i<attribs.size();i++){
+		attribs[i].arraySize = attributeArraySize;
+		attribs[i].values = new float[attribs[i].size*attribs[i].arraySize];
+	} 
+	buffer_index = attribbuffer_index;
 }

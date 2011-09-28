@@ -28,8 +28,9 @@ bool Object::loadFromFile(char *path){
 	std::ifstream f(path, std::ios_base::in|std::ios_base::binary);
 	std::string line;
 	char* line_c;
-	unsigned int count = 0, vOff = 0;
+	unsigned int count = 0;
 	Mesh* newMesh;
+	int c = 0;
 
 	while(f.good()){
 		getline(f,line);
@@ -45,7 +46,7 @@ bool Object::loadFromFile(char *path){
 		} else if (strstr(line_c,"end ")){
 			newMesh->allocateBuffers();
 			if (!newMesh->vertShader){
-				newMesh->vertShader = ShaderMgr.createShader(ShaderType::VERTEX, "shaders/phongVS.glsl", newMesh->num_verts);
+				newMesh->vertShader = ShaderMgr.createShader(ShaderType::VERTEX, "shaders/phongVS.glsl");
 			}
 			if (!newMesh->fragShader){
 				newMesh->fragShader = ShaderMgr.createShader(ShaderType::FRAGMENT, "shaders/phongPS.glsl");
@@ -78,9 +79,7 @@ bool Object::loadFromFile(char *path){
 			}
 
 		} else if (strstr(line_c,"num_verts ")){
-			count = 0;
 		} else if (strstr(line_c,"num_norms ")){
-			count = 0;
 		} else if (strstr(line_c,"num_texcoords ")){
 			count = 0;
 			sscanf(line_c,"%*s %u",&newMesh->num_verts);
@@ -130,12 +129,12 @@ bool Object::loadFromFile(char *path){
 			for (unsigned int i=0;i<size;i++){
 				sscanf(buf,"%u",&v);
 				if (i<3){
-					newMesh->faces[count*3+i] = v - vOff;
+					newMesh->faces[count*3+i] = v;
 				} else {
 					count++;
 					newMesh->faces[count*3]   = newMesh->faces[(count-1)*3];
 					newMesh->faces[count*3+1] = newMesh->faces[(count-1)*3+2];
-					newMesh->faces[count*3+2] = v - vOff;
+					newMesh->faces[count*3+2] = v;
 				}
 				buf = strtok(NULL," ");
 			}
@@ -156,8 +155,5 @@ bool Object::loadFromFile(char *path){
 	newMesh = NULL;
 
 	ilShutDown();
-
-	
-
 	return true;
 }

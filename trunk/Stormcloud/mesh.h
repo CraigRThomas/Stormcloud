@@ -40,6 +40,8 @@ public:
 	bool normMapped;			/**< True if this mesh has normal map information. */
 	std::vector<Matrix> TBNs;	/**< Tangent, bitangent, normal matrices for normal mapping. */
 	Matrix transform;			/**< Homogenous transformation matrix. */
+	//static unsigned int bufferOffset;
+	//static unsigned int bufferIndexOffset;
 
 	/** Default constructor. */
 	Mesh();

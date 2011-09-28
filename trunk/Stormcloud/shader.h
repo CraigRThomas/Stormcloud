@@ -35,15 +35,16 @@ public:
 	std::vector<UniformInt> ints;		/**< Collection of uniform ints to be sent to the GPU. */
 	std::vector<UniformFloat> attribs;	/**< Collection of attributes to be sent to the GPU. */
 	std::vector<UniformFloat> OGLfloats;/**< Collection of uniform floats specified by OGL. */
+	unsigned int buffer_index;
 
 	/** Default constructor. */
 	Shader(void);
 	/** Constructor to load from file. */
-	Shader(ShaderType type, char* filepath, unsigned int attributeArraySize = 1, unsigned int priority = 0);
+	Shader(ShaderType type, char* filepath, unsigned int priority = 0);
 	/** Destructor. */
 	~Shader(void);
 	/** Loads a shader from the specified .glsl file. */
-	void load(char* filepath, unsigned int attributeArraySize = 1);
+	void load(char* filepath);
 	/** Returns the filepath for this shader. */
 	char* filepath(void);
 	/** Returns the id for this shader. */
@@ -74,6 +75,8 @@ public:
 	float* getFloat(char* name);
 	/** Returns the memory location of the array holding the values for the specified variable. */
 	int* getInt(char* name);
+	/** Sets the size of the attribute arrays in the Shader. */
+	void setAttributeArraySize(unsigned int attributeArraySize, unsigned int attribbuffer_index);
 
 	// Various useful shader-related functions defined in GLEXT.H 
 	static PFNGLCREATEPROGRAMOBJECTARBPROC   glCreateProgramObjectARB;	/**< Creates an empty shader program. */

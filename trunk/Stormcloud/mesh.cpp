@@ -25,7 +25,7 @@ Mesh::Mesh(){
 	mat.shininess = 0; //must be 1-128; Outside of range = no shininess
 	normMapped = false;
 	transform = Matrix(4,4);
-	
+
 	if (!init) { initBufferProcs(); }
 	buffers = new GLuint[NUM_BUFFERS];
 	glGenBuffers(NUM_BUFFERS, buffers);
@@ -50,15 +50,12 @@ Mesh::~Mesh(){
 void Mesh::allocateBuffers(){
 	glBindBuffer(GL_ARRAY_BUFFER, buffers[VBO]);
 	glBufferData(GL_ARRAY_BUFFER, num_verts*3*sizeof(GLfloat), vertices, GL_STATIC_DRAW); //8 = xyz for verts + xyz for norms + uv for tex coords
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0); 
-	glEnableVertexAttribArray(0);
-	glBindBuffer(GL_ARRAY_BUFFER, buffers[VBO]);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffers[IBO]);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, num_faces*3*sizeof(GLuint), faces, GL_STATIC_DRAW);
 }
 
 void Mesh::update(const GLfloat &dt){
-	
+
 }
 
 void Mesh::draw(Matrix &t){
@@ -93,6 +90,7 @@ void Mesh::draw(Matrix &t){
 	}
 
 	if (vertShader){
+		vertShader->setAttributeArraySize(num_verts,0);
 		vertShader->send("vPosition",vertices);
 		vertShader->send("vNormal",normals);
 		vertShader->send("vTexCoord",texCoords);
@@ -125,7 +123,9 @@ void Mesh::draw(Matrix &t){
 		glBindTexture(GL_TEXTURE_2D, normMapId);
 	}
 
-	glBindBuffer(GL_ARRAY_BUFFER, buffers[VBO]);
+	glBindBuffer(GL_ARRAY_BUFFER,buffers[VBO]);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0); 
+	glEnableVertexAttribArray(0);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffers[IBO]);
 	glDrawElements(GL_TRIANGLES, num_faces*3, GL_UNSIGNED_INT, (GLuint*)0);
 }
