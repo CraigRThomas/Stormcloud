@@ -18,7 +18,7 @@ bool isPaused = false;
 float yRotation = 0;
 float xRotation = 0;
 Vector3f translation(0,0,-20);
-Object obj,obj2;
+Object obj;
 Matrix projectionMat(4,4);
 
 void mouseWrap(int b, int s, int x, int y);
@@ -88,7 +88,6 @@ void redraw(){
 	t = projectionMat ;//* t;
 
 	obj.draw(t);
-	obj2.draw(t);
 
 	glutSwapBuffers();
 }
@@ -122,7 +121,6 @@ int main(int argc, char **argv){
 	InputMgr;
 	ShaderMgr;
 	obj.loadFromFile("models/manta.mesh");
-	obj2.loadFromFile("models/test.mesh");
 
 	QueryPerformanceCounter(&tick1); //record the first tick just before we start
 	
